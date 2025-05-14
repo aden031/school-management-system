@@ -17,11 +17,9 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import type { Faculty } from "@/components/data-tables/faculty-data-table"
-import { Edit, PlusCircle, Trash2 } from "lucide-react"
+import { Edit, PlusCircle, Trash2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
 
-// Define the form schema
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Faculty name must be at least 2 characters.",
@@ -32,35 +30,53 @@ type FacultyFormValues = z.infer<typeof formSchema>
 
 interface FacultyDialogProps {
   mode: "add" | "edit" | "delete"
-  faculty?: Faculty
+  faculty?: Faculty & { _id?: string } // supports _id
+  onDone?: () => void
 }
 
-export function FacultyDialog({ mode, faculty }: FacultyDialogProps) {
+export function FacultyDialog({ mode, faculty, onDone }: FacultyDialogProps) {
   const [open, setOpen] = useState(false)
 
-  // Default values for the form
-  const defaultValues: Partial<FacultyFormValues> = {
-    name: faculty?.name || "",
-  }
-
-  // Initialize the form
   const form = useForm<FacultyFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: {
+      name: faculty?.name || "",
+    },
   })
 
-  // Form submission handler
-  function onSubmit(data: FacultyFormValues) {
-    // In a real app, you would send this data to your backend
-    console.log(data)
-    setOpen(false)
+  async function onSubmit(data: FacultyFormValues) {
+    try {
+      const res = await fetch(
+        mode === "add" ? "/api/faculty" : `/api/faculty/${faculty?._id}`,
+        {
+          method: mode === "add" ? "POST" : "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      )
+
+      if (!res.ok) throw new Error("Failed to submit")
+
+      setOpen(false)
+      onDone?.()
+    } catch (error) {
+      console.error("Submit failed", error)
+    }
   }
 
-  // Delete handler
-  function onDelete() {
-    // In a real app, you would send a delete request to your backend
-    console.log("Deleting faculty:", faculty?.id)
-    setOpen(false)
+  async function onDelete() {
+    try {
+      const res = await fetch(`/api/faculty/${faculty?._id}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) throw new Error("Failed to delete")
+
+      setOpen(false)
+      onDone?.()
+    } catch (error) {
+      console.error("Delete failed", error)
+    }
   }
 
   return (
@@ -81,6 +97,7 @@ export function FacultyDialog({ mode, faculty }: FacultyDialogProps) {
           </Button>
         )}
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
@@ -90,8 +107,8 @@ export function FacultyDialog({ mode, faculty }: FacultyDialogProps) {
             {mode === "add"
               ? "Add a new faculty to the system."
               : mode === "edit"
-                ? "Make changes to the faculty information."
-                : "Are you sure you want to delete this faculty?"}
+              ? "Make changes to the faculty information."
+              : "Are you sure you want to delete this faculty?"}
           </DialogDescription>
         </DialogHeader>
 
@@ -101,8 +118,7 @@ export function FacultyDialog({ mode, faculty }: FacultyDialogProps) {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Warning</AlertTitle>
               <AlertDescription>
-                This action cannot be undone. This will permanently delete the faculty and all associated departments,
-                classes, and courses.
+                This will permanently delete the faculty and related data. You can’t undo this.
               </AlertDescription>
             </Alert>
             <DialogFooter>

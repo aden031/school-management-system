@@ -1,5 +1,6 @@
 "use client"
 
+import axios from "axios"
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 
 interface AuthContextType {
@@ -11,8 +12,7 @@ interface AuthContextType {
 
 interface User {
   email: string
-  name: string
-  role: string
+  password: string // optional, remove if needed
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -22,7 +22,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Initialize auth state from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
@@ -40,45 +39,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // In a real app, you would validate credentials with your backend
-      // For demo purposes, we'll accept any valid email/password
-      if (email && password.length >= 6) {
-        const user = {
-          email,
-          name: "Admin User",
-          role: "admin",
+      const response = await axios.post("/api/users/user/login", {
+        Email: email, // backend expects capital "E"
+        password,
+      })
+
+      if (response.status === 200) {
+        const data = response.data
+
+        const user: User = {
+          email: data.Email,
+          password: data.password, // optional to store
         }
 
-        // Store user in localStorage
         localStorage.setItem("user", JSON.stringify(user))
-
-        // Update state
         setUser(user)
         setIsAuthenticated(true)
         return true
       }
+
       return false
-    } catch (error) {
-      console.error("Login error:", error)
+    } catch (error: any) {
+      console.error("Login failed:", error?.response?.data || error.message)
       return false
     }
   }
 
   const logout = () => {
-    // Clear localStorage
     localStorage.removeItem("user")
-
-    // Update state
     setUser(null)
     setIsAuthenticated(false)
   }
 
-  // Provide a loading state to avoid flash of content
-  if (loading) {
-    return null
-  }
+  if (loading) return null
 
-  return <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {
