@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -17,25 +17,14 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { type Department, faculties } from "@/components/data-tables/department-data-table"
-import { Edit, PlusCircle, Trash2 } from "lucide-react"
+import { Edit, PlusCircle, Trash2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
+import axios from "axios"
 
-// Define the form schema
 const formSchema = z.object({
-  facultyId: z.string({
-    required_error: "Please select a faculty.",
-  }),
-  name: z.string().min(2, {
-    message: "Department name must be at least 2 characters.",
-  }),
-  sCount: z.coerce.number().min(0, {
-    message: "Student count must be a positive number.",
-  }),
-  departmentMode: z.string({
-    required_error: "Please select a department mode.",
-  }),
+  facultyId: z.string({ required_error: "Please select a faculty." }),
+  name: z.string().min(2, { message: "Department name must be at least 2 characters." }),
+  departmentMode: z.string({ required_error: "Please select a department mode." }),
 })
 
 type DepartmentFormValues = z.infer<typeof formSchema>
@@ -43,37 +32,68 @@ type DepartmentFormValues = z.infer<typeof formSchema>
 interface DepartmentDialogProps {
   mode: "add" | "edit" | "delete"
   department?: Department
+  onDone?: () => void
 }
 
-export function DepartmentDialog({ mode, department }: DepartmentDialogProps) {
+export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogProps) {
   const [open, setOpen] = useState(false)
+  const [faculties, setFaculties] = useState<{ _id: string; name: string }[]>([])
 
-  // Default values for the form
   const defaultValues: Partial<DepartmentFormValues> = {
-    facultyId: department?.facultyId || "",
+    facultyId: department?._id || "",
     name: department?.name || "",
-    sCount: department?.sCount || 0,
     departmentMode: department?.departmentMode || "",
   }
 
-  // Initialize the form
   const form = useForm<DepartmentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
   })
 
-  // Form submission handler
-  function onSubmit(data: DepartmentFormValues) {
-    // In a real app, you would send this data to your backend
-    console.log(data)
-    setOpen(false)
+  useEffect(() => {
+    const fetchFaculties = async () => {
+      try {
+        const res = await axios.get("/api/faculty")
+        setFaculties(res.data)
+      } catch (err) {
+        console.error("Error fetching faculties:", err)
+      }
+    }
+
+    if (open) fetchFaculties()
+  }, [open])
+
+  const onSubmit = async (data: DepartmentFormValues) => {
+    const payload = {
+      name: data.name,
+      facultyId: data.facultyId,
+      departmentMode: data.departmentMode,
+    }
+
+    try {
+      const res = await axios({
+        method: mode === "edit" ? "PUT" : "POST",
+        url: `/api/department/${department?._id || ""}`,
+        data: mode === "edit" ? { ...payload, _id: department?._id } : payload,
+      })
+
+      // if (!res.status === 200) throw new Error("Failed to submit")
+      setOpen(false)
+      onDone?.()
+    } catch (err) {
+      console.error("Error submitting department:", err)
+    }
   }
 
-  // Delete handler
-  function onDelete() {
-    // In a real app, you would send a delete request to your backend
-    console.log("Deleting department:", department?.id)
-    setOpen(false)
+  const onDelete = async () => {
+    try {
+      const res = await axios.delete(`/api/department/${department?._id}`)
+      if (res.status !== 200) throw new Error("Failed to delete")
+      setOpen(false)
+      onDone?.()
+    } catch (err) {
+      console.error("Error deleting department:", err)
+    }
   }
 
   return (
@@ -103,8 +123,8 @@ export function DepartmentDialog({ mode, department }: DepartmentDialogProps) {
             {mode === "add"
               ? "Add a new department to the system."
               : mode === "edit"
-                ? "Make changes to the department information."
-                : "Are you sure you want to delete this department?"}
+              ? "Make changes to the department information."
+              : "Are you sure you want to delete this department?"}
           </DialogDescription>
         </DialogHeader>
 
@@ -114,8 +134,7 @@ export function DepartmentDialog({ mode, department }: DepartmentDialogProps) {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Warning</AlertTitle>
               <AlertDescription>
-                This action cannot be undone. This will permanently delete the department and all associated classes and
-                courses.
+                This action cannot be undone. This will permanently delete the department.
               </AlertDescription>
             </Alert>
             <DialogFooter>
@@ -144,7 +163,7 @@ export function DepartmentDialog({ mode, department }: DepartmentDialogProps) {
                       </FormControl>
                       <SelectContent>
                         {faculties.map((faculty) => (
-                          <SelectItem key={faculty.id} value={faculty.id}>
+                          <SelectItem key={faculty._id} value={faculty._id}>
                             {faculty.name}
                           </SelectItem>
                         ))}
@@ -163,20 +182,6 @@ export function DepartmentDialog({ mode, department }: DepartmentDialogProps) {
                     <FormLabel>Department Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Department name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sCount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Student Count</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="Student count" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

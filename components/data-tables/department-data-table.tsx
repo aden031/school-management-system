@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -16,83 +16,90 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DepartmentDialog } from "@/components/forms/department-form"
-import type { Faculty } from "./faculty-data-table"
+import axios from 'axios'
 
 // Define the Department type
 export type Department = {
-  id: string
-  facultyId: string
-  facultyName: string
+  _id: string
+  facultyId: {
+    _id: string
+    name: string
+  }
   name: string
-  sCount: number
+  studentCount: number
   departmentMode: string
+  createdAt: string
+  updatedAt: string
 }
 
-// Sample data
-const data: Department[] = [
-  { id: "1", facultyId: "1", facultyName: "Engineering", name: "Computer Science", sCount: 120, departmentMode: "CMS" },
-  {
-    id: "2",
-    facultyId: "1",
-    facultyName: "Engineering",
-    name: "Electrical Engineering",
-    sCount: 85,
-    departmentMode: "CMS",
-  },
-  { id: "3", facultyId: "2", facultyName: "Business", name: "Marketing", sCount: 95, departmentMode: "CMS" },
-  { id: "4", facultyId: "2", facultyName: "Business", name: "Finance", sCount: 110, departmentMode: "CMS" },
-  { id: "5", facultyId: "3", facultyName: "Medicine", name: "Nursing", sCount: 75, departmentMode: "CMS" },
-]
-
-// Sample faculties for the form
-export const faculties: Faculty[] = [
-  { id: "1", name: "Engineering" },
-  { id: "2", name: "Business" },
-  { id: "3", name: "Medicine" },
-  { id: "4", name: "Arts and Sciences" },
-  { id: "5", name: "Education" },
-]
-
-// Define columns
-const columns: ColumnDef<Department>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "facultyName",
-    header: "Faculty",
-  },
-  {
-    accessorKey: "name",
-    header: "Department Name",
-  },
-  {
-    accessorKey: "sCount",
-    header: "Student Count",
-  },
-  {
-    accessorKey: "departmentMode",
-    header: "Department Mode",
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const department = row.original
-
-      return (
-        <div className="flex items-center gap-2">
-          <DepartmentDialog mode="edit" department={department} />
-          <DepartmentDialog mode="delete" department={department} />
-        </div>
-      )
-    },
-  },
-]
+// Fetch department data
+const fetchDepartments = async () => {
+  try {
+    const response = await axios.get("/api/department")
+    return response.data
+  } catch (error) {
+    console.error("Error fetching departments:", error)
+    return []
+  }
+}
 
 export function DepartmentDataTable() {
+  const [data, setData] = useState<Department[]>([])
+  const [loading, setLoading] = useState(true)
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+  // Load department data from the server
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true)
+      const departments = await fetchDepartments()
+      setData(departments)
+      setLoading(false)
+    }
+
+    loadData()
+  }, [])
+
+  const updateDepartmentList = () => {
+    // Refetch departments to dynamically update the table after any action
+    fetchDepartments().then(setData)
+  }
+
+  const columns: ColumnDef<Department>[] = [
+    {
+      accessorKey: "_id",
+      header: "ID",
+    },
+    {
+      accessorKey: "facultyId.name",
+      header: "Faculty",
+    },
+    {
+      accessorKey: "name",
+      header: "Department Name",
+    },
+    {
+      accessorKey: "studentCount",
+      header: "Student Count",
+    },
+    {
+      accessorKey: "departmentMode",
+      header: "Department Mode",
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const department = row.original
+        return (
+          <div className="flex items-center gap-2">
+            <DepartmentDialog mode="edit" department={department} onDone={updateDepartmentList} />
+            <DepartmentDialog mode="delete" department={department} onDone={updateDepartmentList} />
+          </div>
+        )
+      },
+    },
+  ]
 
   const table = useReactTable({
     data,
@@ -118,7 +125,7 @@ export function DepartmentDataTable() {
           onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
-        <DepartmentDialog mode="add" />
+        <DepartmentDialog mode="add" onDone={updateDepartmentList} />
       </div>
 
       <div className="rounded-md border">
@@ -126,22 +133,30 @@ export function DepartmentDataTable() {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
