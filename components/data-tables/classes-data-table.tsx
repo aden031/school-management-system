@@ -43,10 +43,10 @@ export function ClassesDataTable() {
       const res = await axios.get("/api/classes")
       const classesData: Classes[] = res.data.map((item: any) => ({
         id: item._id,
-        facultyId: item.facultyId._id,
-        facultyName: item.facultyId.name,
-        departmentId: item.departmentId._id,
-        departmentName: item.departmentId.name,
+        facultyId: item.facultyId?._id ?? "",
+        facultyName: item.facultyId?.name ?? "N/A",
+        departmentId: item.departmentId?._id ?? "",
+        departmentName: item.departmentId?.name ?? "N/A",
         semesterName: item.semester,
         classMode: item.classMode,
         type: item.type,
@@ -66,8 +66,9 @@ export function ClassesDataTable() {
 
   const columns: ColumnDef<Classes>[] = [
     {
-      accessorKey: "id",
+      id: "index",
       header: "ID",
+      cell: ({ row }) => row.index + 1,
     },
     {
       accessorKey: "facultyName",
