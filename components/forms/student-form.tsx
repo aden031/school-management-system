@@ -33,7 +33,7 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
-  gender: z.enum(["Male", "Female", "Other"], {
+  gender: z.enum(["Male", "Female"], {
     required_error: "Please select a gender.",
   }),
   parentPhone: z.string().min(10, {
@@ -238,7 +238,6 @@ export function StudentDialog({ mode, student }: StudentDialogProps) {
                       <SelectContent>
                         <SelectItem value="Male">Male</SelectItem>
                         <SelectItem value="Female">Female</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

@@ -28,7 +28,7 @@ export type Student = {
   classId: string
   className: string
   name: string
-  gender: "Male" | "Female" | "Other"
+  gender: "Male" | "Female" 
   parentPhone: string
   phone: string
   studentId: string
@@ -101,7 +101,7 @@ const data: Student[] = [
     classId: "5",
     className: "Nursing - Semester 1",
     name: "Charlie Wilson",
-    gender: "Other",
+    gender: "Male",
     parentPhone: "+1234567898",
     phone: "+1234567899",
     studentId: "MED001",

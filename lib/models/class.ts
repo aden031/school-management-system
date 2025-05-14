@@ -6,8 +6,8 @@ export interface IClass extends Document {
   facultyId: mongoose.Types.ObjectId | IFaculty
   departmentId: mongoose.Types.ObjectId | IDepartment
   semester: number
-  classMode: string
-  type: string
+  classMode: "full time" | "part time"
+  type: "A" | "B" | "C" | "D" | "E"
   status: string
 }
 
@@ -29,10 +29,13 @@ const ClassSchema: Schema = new Schema(
       min: 1,
       max: 8,
     },
-    classMode: {
+classMode: {
       type: String,
-      required: [true, "Class mode is required"],
-      enum: ["full time", "part time"],
+      required: [true, "💡 Class mode is required."],
+      enum: {
+        values: ["full time", "part time"],
+        message: 'Class mode must be either "full time" or "part time".',
+      },
     },
     type: {
       type: String,

@@ -33,7 +33,7 @@ const StudentSchema: Schema = new Schema(
     },
     gender: {
       type: String,
-      enum: ["Male", "Female", "Other"],
+      enum: ["Male", "Female"],
     },
     parentPhone: {
       type: String,
