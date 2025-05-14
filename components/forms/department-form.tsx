@@ -34,7 +34,7 @@ interface DepartmentDialogProps {
   department?: Department
   onDone?: () => void
 }
-
+ 
 export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogProps) {
   const [open, setOpen] = useState(false)
   const [faculties, setFaculties] = useState<{ _id: string; name: string }[]>([])

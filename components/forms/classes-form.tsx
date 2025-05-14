@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -12,113 +12,147 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger, 
+  DialogTrigger,
 } from "@/components/ui/dialog"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { type Classes, faculties, departments } from "@/components/data-tables/classes-data-table"
-import { Edit, PlusCircle, Trash2 } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Edit, PlusCircle, Trash2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
 
-// Define the form schema
 const formSchema = z.object({
-  facultyId: z.string({
-    required_error: "Please select a faculty.",
-  }),
-  departmentId: z.string({
-    required_error: "Please select a department.",
-  }),
-  semesterName: z.coerce
-    .number()
-    .min(1, {
-      message: "Semester must be at least 1.",
-    })
-    .max(8, {
-      message: "Semester cannot be more than 8.",
-    }),
-  classMode: z.enum(["full time", "part time"], {
-    required_error: "Please select a class mode.",
-  }),
-  type: z.enum(["A", "B", "C", "D"], {
-    required_error: "Please select a type.",
-  }),
-  status: z.enum(["active", "inactive"], {
-    required_error: "Please select a status.",
-  }),
+  facultyId: z.string().min(1, { message: "Please select a faculty." }),
+  departmentId: z.string().min(1, { message: "Please select a department." }),
+  semester: z.coerce.number().min(1).max(8),
+  classMode: z.enum(["full time", "part time"]),
+  type: z.enum(["A", "B", "C", "D"]),
+  status: z.enum(["active", "inactive"]),
 })
 
 type ClassesFormValues = z.infer<typeof formSchema>
 
+interface Classes {
+  id?: string
+  facultyId: string
+  departmentId: string
+  semester: number
+  classMode: "full time" | "part time"
+  type: "A" | "B" | "C" | "D"
+  status: "active" | "inactive"
+}
+
 interface ClassesDialogProps {
   mode: "add" | "edit" | "delete"
   classes?: Classes
+  onDone?: () => void
 }
 
-export function ClassesDialog({ mode, classes }: ClassesDialogProps) {
+export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
   const [open, setOpen] = useState(false)
-  const [filteredDepartments, setFilteredDepartments] = useState(departments)
+  const [faculties, setFaculties] = useState<{ _id: string; name: string }[]>([])
+  const [departments, setDepartments] = useState<{ _id: string; name: string }[]>([])
 
-  // Default values for the form
-  const defaultValues: Partial<ClassesFormValues> = {
-    facultyId: classes?.facultyId || "",
-    departmentId: classes?.departmentId || "",
-    semesterName: classes?.semesterName || 1,
-    classMode: classes?.classMode || "full time",
-    type: classes?.type || "A",
-    status: classes?.status || "active",
-  }
-
-  // Initialize the form
   const form = useForm<ClassesFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: {
+      facultyId: "",
+      departmentId: "",
+      semester: 1,
+      classMode: "full time",
+      type: "A",
+      status: "active",
+    },
   })
 
-  // Watch for faculty changes to filter departments
-  const facultyId = form.watch("facultyId")
-
   useEffect(() => {
-    if (facultyId) {
-      setFilteredDepartments(departments.filter((dept) => dept.facultyId === facultyId))
-    } else {
-      setFilteredDepartments(departments)
-    }
-  }, [facultyId])
+    fetch("/api/faculty")
+      .then(res => res.json())
+      .then(data => setFaculties(data))
 
-  // Form submission handler
-  function onSubmit(data: ClassesFormValues) {
-    // In a real app, you would send this data to your backend
-    console.log(data)
-    setOpen(false)
+    fetch("/api/department")
+      .then(res => res.json())
+      .then(data => setDepartments(data))
+  }, [])
+
+  // Update form values when editing
+  useEffect(() => {
+    if (mode === "edit" && classes) {
+      form.reset({
+        facultyId: classes.facultyId,
+        departmentId: classes.departmentId,
+        semester: classes.semester,
+        classMode: classes.classMode,
+        type: classes.type,
+        status: classes.status,
+      })
+    }
+  }, [classes, form, mode])
+
+  const onSubmit = async (data: ClassesFormValues) => {
+    try {
+      const payload = { ...data }
+
+      if (mode === "add") {
+        await fetch("/api/classes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+        onDone?.()
+      } else if (mode === "edit" && classes?.id) {
+        await fetch(`/api/classes/${classes.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+        onDone?.()
+      }
+
+      setOpen(false)
+    } catch (err) {
+      console.error("Error submitting form", err)
+    }
   }
 
-  // Delete handler
-  function onDelete() {
-    // In a real app, you would send a delete request to your backend
-    console.log("Deleting class:", classes?.id)
-    setOpen(false)
+  const onDelete = async () => {
+    try {
+      if (classes?.id) {
+        await fetch(`/api/classes/${classes.id}`, {
+          method: "DELETE",
+        })
+        onDone?.()
+        setOpen(false)
+      }
+    } catch (err) {
+      console.error("Error deleting class", err)
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "add" ? (
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Class
-          </Button>
+          <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Class</Button>
         ) : mode === "edit" ? (
-          <Button variant="outline" size="icon">
-            <Edit className="h-4 w-4" />
-          </Button>
+          <Button variant="outline" size="icon"><Edit className="h-4 w-4" /></Button>
         ) : (
-          <Button variant="destructive" size="icon">
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <Button variant="destructive" size="icon"><Trash2 className="h-4 w-4" /></Button>
         )}
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{mode === "add" ? "Add Class" : mode === "edit" ? "Edit Class" : "Delete Class"}</DialogTitle>
@@ -126,8 +160,8 @@ export function ClassesDialog({ mode, classes }: ClassesDialogProps) {
             {mode === "add"
               ? "Add a new class to the system."
               : mode === "edit"
-                ? "Make changes to the class information."
-                : "Are you sure you want to delete this class?"}
+              ? "Make changes to the class information."
+              : "Are you sure you want to delete this class?"}
           </DialogDescription>
         </DialogHeader>
 
@@ -136,17 +170,11 @@ export function ClassesDialog({ mode, classes }: ClassesDialogProps) {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Warning</AlertTitle>
-              <AlertDescription>
-                This action cannot be undone. This will permanently delete the class and all associated students.
-              </AlertDescription>
+              <AlertDescription>This action cannot be undone.</AlertDescription>
             </Alert>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={onDelete}>
-                Delete
-              </Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button variant="destructive" onClick={onDelete}>Delete</Button>
             </DialogFooter>
           </>
         ) : (
@@ -158,16 +186,16 @@ export function ClassesDialog({ mode, classes }: ClassesDialogProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Faculty</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a faculty" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {faculties.map((faculty) => (
-                          <SelectItem key={faculty.id} value={faculty.id}>
-                            {faculty.name}
+                        {faculties.map((f) => (
+                          <SelectItem key={f._id} value={f._id}>
+                            {f.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -183,16 +211,16 @@ export function ClassesDialog({ mode, classes }: ClassesDialogProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Department</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!facultyId}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a department" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {filteredDepartments.map((department) => (
-                          <SelectItem key={department.id} value={department.id}>
-                            {department.name}
+                        {departments.map((d) => (
+                          <SelectItem key={d._id} value={d._id}>
+                            {d.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -204,12 +232,12 @@ export function ClassesDialog({ mode, classes }: ClassesDialogProps) {
 
               <FormField
                 control={form.control}
-                name="semesterName"
+                name="semester"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Semester</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Semester" {...field} />
+                      <Input type="number" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -222,7 +250,7 @@ export function ClassesDialog({ mode, classes }: ClassesDialogProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class Mode</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a class mode" />
@@ -244,10 +272,10 @@ export function ClassesDialog({ mode, classes }: ClassesDialogProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a type" />
+                          <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -268,10 +296,10 @@ export function ClassesDialog({ mode, classes }: ClassesDialogProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a status" />
+                          <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

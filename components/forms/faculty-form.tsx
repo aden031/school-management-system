@@ -78,7 +78,7 @@ export function FacultyDialog({ mode, faculty, onDone }: FacultyDialogProps) {
       console.error("Delete failed", error)
     }
   }
-
+ 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

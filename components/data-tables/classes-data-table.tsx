@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import axios from "axios"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -17,10 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ClassesDialog } from "@/components/forms/classes-form"
 import { Badge } from "@/components/ui/badge"
-import type { Faculty } from "./faculty-data-table"
-import type { Department } from "./department-data-table"
 
-// Define the Classes type
 export type Classes = {
   id: string
   facultyId: string
@@ -33,146 +31,90 @@ export type Classes = {
   status: "active" | "inactive"
 }
 
-// Sample data
-const data: Classes[] = [
-  {
-    id: "1",
-    facultyId: "1",
-    facultyName: "Engineering",
-    departmentId: "1",
-    departmentName: "Computer Science",
-    semesterName: 1,
-    classMode: "full time",
-    type: "A",
-    status: "active",
-  },
-  {
-    id: "2",
-    facultyId: "1",
-    facultyName: "Engineering",
-    departmentId: "2",
-    departmentName: "Electrical Engineering",
-    semesterName: 2,
-    classMode: "part time",
-    type: "B",
-    status: "active",
-  },
-  {
-    id: "3",
-    facultyId: "2",
-    facultyName: "Business",
-    departmentId: "3",
-    departmentName: "Marketing",
-    semesterName: 3,
-    classMode: "full time",
-    type: "C",
-    status: "inactive",
-  },
-  {
-    id: "4",
-    facultyId: "2",
-    facultyName: "Business",
-    departmentId: "4",
-    departmentName: "Finance",
-    semesterName: 4,
-    classMode: "part time",
-    type: "D",
-    status: "active",
-  },
-  {
-    id: "5",
-    facultyId: "3",
-    facultyName: "Medicine",
-    departmentId: "5",
-    departmentName: "Nursing",
-    semesterName: 1,
-    classMode: "full time",
-    type: "A",
-    status: "active",
-  },
-]
-
-// Sample faculties for the form
-export const faculties: Faculty[] = [
-  { id: "1", name: "Engineering" },
-  { id: "2", name: "Business" },
-  { id: "3", name: "Medicine" },
-  { id: "4", name: "Arts and Sciences" },
-  { id: "5", name: "Education" },
-]
-
-// Sample departments for the form
-export const departments: Department[] = [
-  { id: "1", facultyId: "1", facultyName: "Engineering", name: "Computer Science", sCount: 120, departmentMode: "CMS" },
-  {
-    id: "2",
-    facultyId: "1",
-    facultyName: "Engineering",
-    name: "Electrical Engineering",
-    sCount: 85,
-    departmentMode: "CMS",
-  },
-  { id: "3", facultyId: "2", facultyName: "Business", name: "Marketing", sCount: 95, departmentMode: "CMS" },
-  { id: "4", facultyId: "2", facultyName: "Business", name: "Finance", sCount: 110, departmentMode: "CMS" },
-  { id: "5", facultyId: "3", facultyName: "Medicine", name: "Nursing", sCount: 75, departmentMode: "CMS" },
-]
-
-// Define columns
-const columns: ColumnDef<Classes>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "facultyName",
-    header: "Faculty",
-  },
-  {
-    accessorKey: "departmentName",
-    header: "Department",
-  },
-  {
-    accessorKey: "semesterName",
-    header: "Semester",
-  },
-  {
-    accessorKey: "classMode",
-    header: "Class Mode",
-    cell: ({ row }) => {
-      const classMode = row.getValue("classMode") as string
-      return <Badge variant={classMode === "full time" ? "default" : "outline"}>{classMode}</Badge>
-    },
-  },
-  {
-    accessorKey: "type",
-    header: "Type",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string
-      return <Badge variant={status === "active" ? "success" : "destructive"}>{status}</Badge>
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const classes = row.original
-
-      return (
-        <div className="flex items-center gap-2">
-          <ClassesDialog mode="edit" classes={classes} />
-          <ClassesDialog mode="delete" classes={classes} />
-        </div>
-      )
-    },
-  },
-]
-
 export function ClassesDataTable() {
+  const [data, setData] = useState<Classes[]>([])
+  const [loading, setLoading] = useState(true)
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+  const fetchClasses = async () => {
+    setLoading(true)
+    try {
+      const res = await axios.get("/api/classes")
+      const classesData: Classes[] = res.data.map((item: any) => ({
+        id: item._id,
+        facultyId: item.facultyId._id,
+        facultyName: item.facultyId.name,
+        departmentId: item.departmentId._id,
+        departmentName: item.departmentId.name,
+        semesterName: item.semester,
+        classMode: item.classMode,
+        type: item.type,
+        status: item.status,
+      }))
+      setData(classesData)
+    } catch (error) {
+      console.error("Failed to fetch classes", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchClasses()
+  }, [])
+
+  const columns: ColumnDef<Classes>[] = [
+    {
+      id: "index",
+      header: "#",
+      cell: ({ row }) => row.index + 1,
+    },
+    {
+      accessorKey: "facultyName",
+      header: "Faculty",
+    },
+    {
+      accessorKey: "departmentName",
+      header: "Department",
+    },
+    {
+      accessorKey: "semesterName",
+      header: "Semester",
+    },
+    {
+      accessorKey: "classMode",
+      header: "Class Mode",
+      cell: ({ row }) => {
+        const value = row.getValue("classMode") as string
+        return <Badge variant={value === "full time" ? "default" : "outline"}>{value}</Badge>
+      },
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const value = row.getValue("status") as string
+        return <Badge variant={value === "active" ? "success" : "destructive"}>{value}</Badge>
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const item = row.original
+        return (
+          <div className="flex items-center gap-2">
+            <ClassesDialog mode="edit" classes={item} onDone={fetchClasses} />
+            <ClassesDialog mode="delete" classes={item} onDone={fetchClasses} />
+          </div>
+        )
+      },
+    },
+  ]
 
   const table = useReactTable({
     data,
@@ -195,10 +137,10 @@ export function ClassesDataTable() {
         <Input
           placeholder="Filter classes..."
           value={(table.getColumn("departmentName")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("departmentName")?.setFilterValue(event.target.value)}
+          onChange={(e) => table.getColumn("departmentName")?.setFilterValue(e.target.value)}
           className="max-w-sm"
         />
-        <ClassesDialog mode="add" />
+        <ClassesDialog mode="add" onDone={fetchClasses} />
       </div>
 
       <div className="rounded-md border">
@@ -206,20 +148,24 @@ export function ClassesDataTable() {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}

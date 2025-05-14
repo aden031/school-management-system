@@ -55,8 +55,9 @@ export function FacultyDataTable() {
 
   const columns: ColumnDef<Faculty>[] = [
     {
-      accessorKey: "id",
+      id: "index",
       header: "ID",
+      cell: ({ row }) => row.index + 1,
     },
     {
       accessorKey: "name",

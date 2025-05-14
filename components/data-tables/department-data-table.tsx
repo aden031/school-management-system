@@ -16,9 +16,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DepartmentDialog } from "@/components/forms/department-form"
-import axios from 'axios'
+import axios from "axios"
 
-// Define the Department type
 export type Department = {
   _id: string
   facultyId: {
@@ -32,7 +31,6 @@ export type Department = {
   updatedAt: string
 }
 
-// Fetch department data
 const fetchDepartments = async () => {
   try {
     const response = await axios.get("/api/department")
@@ -49,7 +47,6 @@ export function DepartmentDataTable() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
-  // Load department data from the server
   useEffect(() => {
     const loadData = async () => {
       setLoading(true)
@@ -62,14 +59,14 @@ export function DepartmentDataTable() {
   }, [])
 
   const updateDepartmentList = () => {
-    // Refetch departments to dynamically update the table after any action
     fetchDepartments().then(setData)
   }
 
   const columns: ColumnDef<Department>[] = [
     {
-      accessorKey: "_id",
+      id: "index",
       header: "ID",
+      cell: ({ row }) => row.index + 1,
     },
     {
       accessorKey: "facultyId.name",
