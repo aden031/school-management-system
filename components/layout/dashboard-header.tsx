@@ -70,7 +70,7 @@ export function DashboardHeader({ sidebarOpen = true, onSidebarOpenChange, user 
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
                 <span className="text-xs font-medium text-primary">
-                  {user?.name?.substring(0, 2).toUpperCase() || "AD"}
+                  {user?.fullname?.substring(0, 2).toUpperCase() || "AD"}
                 </span>
               </div>
             </Button>
@@ -78,7 +78,7 @@ export function DashboardHeader({ sidebarOpen = true, onSidebarOpenChange, user 
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.name || "Admin User"}</p>
+                <p className="text-sm font-medium leading-none">{user?.fullname || "Admin User"}</p>
                 <p className="text-xs leading-none text-muted-foreground">{user?.email || "admin@example.com"}</p>
               </div>
             </DropdownMenuLabel>

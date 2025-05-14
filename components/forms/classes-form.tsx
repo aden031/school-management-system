@@ -56,9 +56,9 @@ interface Classes {
 
 interface ClassesDialogProps {
   mode: "add" | "edit" | "delete"
-  classes?: Classes
+  classes?: any
   onDone?: () => void
-}
+} 
 
 export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
   const [open, setOpen] = useState(false)

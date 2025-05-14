@@ -31,7 +31,7 @@ type DepartmentFormValues = z.infer<typeof formSchema>
 
 interface DepartmentDialogProps {
   mode: "add" | "edit" | "delete"
-  department?: Department
+  department?: any
   onDone?: () => void
 }
  

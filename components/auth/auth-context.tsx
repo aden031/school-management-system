@@ -11,8 +11,9 @@ interface AuthContextType {
 }
 
 interface User {
-  email: string
-  password: string // optional, remove if needed
+  email: string,
+  fullname:string
+  // password: string // optional, remove if needed
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -49,7 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const user: User = {
           email: data.Email,
-          password: data.password, // optional to store
+          fullname:data.FullName
+          // password: data.password, // optional to store
         }
 
         localStorage.setItem("user", JSON.stringify(user))

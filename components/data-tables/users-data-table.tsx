@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -18,7 +18,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { UsersDialog } from "@/components/forms/users-form"
 import { Badge } from "@/components/ui/badge"
 
-// Define the User type
 export type User = {
   id: string
   fullName: string
@@ -27,100 +26,84 @@ export type User = {
   status: "active" | "inactive"
 }
 
-// Sample data
-const data: User[] = [
-  {
-    id: "1",
-    fullName: "John Doe",
-    email: "john.doe@example.com",
-    title: "teacher",
-    status: "active",
-  },
-  {
-    id: "2",
-    fullName: "Jane Smith",
-    email: "jane.smith@example.com",
-    title: "dean",
-    status: "active",
-  },
-  {
-    id: "3",
-    fullName: "Bob Johnson",
-    email: "bob.johnson@example.com",
-    title: "officer",
-    status: "inactive",
-  },
-  {
-    id: "4",
-    fullName: "Alice Brown",
-    email: "alice.brown@example.com",
-    title: "teacher",
-    status: "active",
-  },
-  {
-    id: "5",
-    fullName: "Charlie Wilson",
-    email: "charlie.wilson@example.com",
-    title: "user",
-    status: "active",
-  },
-]
-
-// Define columns
-const columns: ColumnDef<User>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "fullName",
-    header: "Full Name",
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-  },
-  {
-    accessorKey: "title",
-    header: "Title",
-    cell: ({ row }) => {
-      const title = row.getValue("title") as string
-      return (
-        <Badge variant="outline" className="capitalize">
-          {title}
-        </Badge>
-      )
-    },
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string
-      return <Badge variant={status === "active" ? "success" : "destructive"}>{status}</Badge>
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const user = row.original
-
-      return (
-        <div className="flex items-center gap-2">
-          <UsersDialog mode="edit" user={user} />
-          <UsersDialog mode="delete" user={user} />
-        </div>
-      )
-    },
-  },
-]
-
 export function UsersDataTable() {
+  const [users, setUsers] = useState<User[]>([])
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("/api/users")
+      const data = await res.json()
+
+      const mapped = data.map((u: any): User => ({
+        id: u._id,
+        fullName: u.FullName,
+        email: u.Email,
+        title: u.Title,
+        status: u.Status,
+      }))
+
+      setUsers(mapped)
+    } catch (err) {
+      console.error("Failed to fetch users:", err)
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const columns: ColumnDef<User>[] = [
+    {
+      id: "index",
+      header: "ID",
+      cell: ({ row }) => row.index + 1,
+    },
+    {
+      accessorKey: "fullName",
+      header: "Full Name",
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+    },
+    {
+      accessorKey: "title",
+      header: "Title",
+      cell: ({ row }) => {
+        const title = row.getValue("title") as string
+        return (
+          <Badge variant="outline" className="capitalize">
+            {title}
+          </Badge>
+        )
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string
+        return <Badge variant={status === "active" ? "success" : "destructive"}>{status}</Badge>
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const user = row.original
+        return (
+          <div className="flex items-center gap-2">
+            <UsersDialog mode="edit" user={user} onDone={fetchUsers} />
+            <UsersDialog mode="delete" user={user} onDone={fetchUsers} />
+          </div>
+        )
+      },
+    },
+  ]
+
   const table = useReactTable({
-    data,
+    data: users,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -143,7 +126,7 @@ export function UsersDataTable() {
           onChange={(event) => table.getColumn("fullName")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
-        <UsersDialog mode="add" />
+        <UsersDialog mode="add" onDone={fetchUsers} />
       </div>
 
       <div className="rounded-md border">
@@ -151,13 +134,11 @@ export function UsersDataTable() {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>

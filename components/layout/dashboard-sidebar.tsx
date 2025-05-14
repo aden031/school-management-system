@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useAuth } from "../auth/auth-context"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   open?: boolean
@@ -28,7 +29,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function DashboardSidebar({ className, open = true, onOpenChange }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-
+  const {user}=useAuth()
   // Handle mobile menu separately from desktop sidebar state
   const toggleMobileMenu = () => {
     setIsMobileOpen(!isMobileOpen)
@@ -185,8 +186,8 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
                   <span className="text-xs font-medium text-primary">AD</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">Admin User</p>
-                  <p className="text-xs text-muted-foreground">admin@example.com</p>
+                  <p className="text-sm font-medium">{user?.fullname || "Admin user"} </p>
+                  <p className="text-xs text-muted-foreground">{user?.email || "admin@gmail.com"}</p>
                 </div>
               </div>
               <ThemeToggle />

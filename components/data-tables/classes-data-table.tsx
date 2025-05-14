@@ -37,7 +37,7 @@ export function ClassesDataTable() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
-  const fetchClasses = async () => {
+  const fetchData = async () => {
     setLoading(true)
     try {
       const res = await axios.get("/api/classes")
@@ -61,14 +61,13 @@ export function ClassesDataTable() {
   }
 
   useEffect(() => {
-    fetchClasses()
+    fetchData()
   }, [])
 
   const columns: ColumnDef<Classes>[] = [
     {
-      id: "index",
-      header: "#",
-      cell: ({ row }) => row.index + 1,
+      accessorKey: "id",
+      header: "ID",
     },
     {
       accessorKey: "facultyName",
@@ -108,8 +107,8 @@ export function ClassesDataTable() {
         const item = row.original
         return (
           <div className="flex items-center gap-2">
-            <ClassesDialog mode="edit" classes={item} onDone={fetchClasses} />
-            <ClassesDialog mode="delete" classes={item} onDone={fetchClasses} />
+            <ClassesDialog mode="edit" classes={item} onDone={fetchData} />
+            <ClassesDialog mode="delete" classes={item} onDone={fetchData} />
           </div>
         )
       },
@@ -140,7 +139,7 @@ export function ClassesDataTable() {
           onChange={(e) => table.getColumn("departmentName")?.setFilterValue(e.target.value)}
           className="max-w-sm"
         />
-        <ClassesDialog mode="add" onDone={fetchClasses} />
+        <ClassesDialog mode="add" onDone={fetchData} />
       </div>
 
       <div className="rounded-md border">
