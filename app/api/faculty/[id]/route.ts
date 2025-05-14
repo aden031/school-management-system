@@ -3,6 +3,32 @@ import connectDB from "@/lib/db"
 import Faculty from "@/lib/models/faculty"
 import { Types } from "mongoose"
 
+
+
+/**
+ * GET /api/faculty/:id - Get single faculty
+ */
+export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await connectDB()
+
+    const { id } = params
+    if (!Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid faculty ID" }, { status: 400 })
+    }
+
+    const faculty = await Faculty.findById(id)
+    if (!faculty) {
+      return NextResponse.json({ error: "Faculty not found" }, { status: 404 })
+    }
+
+    return NextResponse.json(faculty, { status: 200 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+
 // PUT /api/faculty/:id - Update a faculty
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
