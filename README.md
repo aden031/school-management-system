@@ -6,17 +6,26 @@
 - [`pnpm`](https://pnpm.io/) package manager
 
 ## Setup
+### 1. Install pnpm if you don't have it
 
 ```bash
-# 1. Install pnpm if you don't have it
 npm install -g pnpm
+```
 
-# 2. Clone the repository
+### 2. Clone the repository
+
+```bash
 git clone https://github.com/Alaaja8899/university-management-system
+```
 
-# 3. Install dependencies
+### 3. Install dependencies
+
+```bash
 pnpm install
+```
 
-# 4. Start the development server
+### 4. Start the development server
+
+```bash
 pnpm run dev
 ```
