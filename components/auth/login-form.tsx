@@ -128,7 +128,7 @@ export function LoginForm() {
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
         <div className="text-center text-sm text-muted-foreground">
-          <span>Demo credentials: any valid email and password with 6+ characters</span>
+            <span>Use your actual credentials to log in. If you don't have an account, please contact the administrator.</span>
         </div>
       </CardFooter>
     </Card>
