@@ -14,9 +14,17 @@ import {
 } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { UsersDialog } from "@/components/forms/users-form"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export type User = {
   id: string
@@ -28,10 +36,12 @@ export type User = {
 
 export function UsersDataTable() {
   const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const fetchUsers = async () => {
+    setLoading(true)
     try {
       const res = await fetch("/api/users")
       const data = await res.json()
@@ -47,6 +57,8 @@ export function UsersDataTable() {
       setUsers(mapped)
     } catch (err) {
       console.error("Failed to fetch users:", err)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -85,7 +97,11 @@ export function UsersDataTable() {
       header: "Status",
       cell: ({ row }) => {
         const status = row.getValue("status") as string
-        return <Badge variant={status === "active" ? "success" : "destructive"}>{status}</Badge>
+        return (
+          <Badge variant={status === "active" ? "success" : "destructive"}>
+            {status}
+          </Badge>
+        )
       },
     },
     {
@@ -123,7 +139,9 @@ export function UsersDataTable() {
         <Input
           placeholder="Filter users..."
           value={(table.getColumn("fullName")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("fullName")?.setFilterValue(event.target.value)}
+          onChange={(event) =>
+            table.getColumn("fullName")?.setFilterValue(event.target.value)
+          }
           className="max-w-sm"
         />
         <UsersDialog mode="add" onDone={fetchUsers} />
@@ -136,18 +154,30 @@ export function UsersDataTable() {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              [...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell colSpan={6}>
+                    <Skeleton className="h-4 w-full" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -163,10 +193,20 @@ export function UsersDataTable() {
       </div>
 
       <div className="flex items-center justify-end space-x-2 py-4">
-        <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
           Previous
         </Button>
-        <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
           Next
         </Button>
       </div>
