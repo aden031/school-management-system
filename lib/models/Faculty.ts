@@ -1,13 +1,24 @@
-import mongoose from "mongoose"
+import mongoose, { Schema, type Document, type Model } from "mongoose"
 
-const facultySchema = new mongoose.Schema(
+export interface IFaculty extends Document {
+  name: string
+}
+
+const FacultySchema: Schema = new Schema(
   {
-    Name: {
+    name: {
       type: String,
-      required: true,
+      required: [true, "Faculty name is required"],
+      trim: true,
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    versionKey: false,
+  },
 )
 
-export default mongoose.models.Faculty || mongoose.model("Faculty", facultySchema)
+// Create or retrieve the model
+const Faculty: Model<IFaculty> = mongoose.models.Faculty || mongoose.model<IFaculty>("Faculty", FacultySchema)
+
+export default Faculty

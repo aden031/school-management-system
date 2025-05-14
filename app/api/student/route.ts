@@ -1,172 +1,106 @@
-import { NextResponse } from "next/server"
-import { connectToDatabase } from "@/lib/db"
-import { ObjectId } from "mongodb"
+import { type NextRequest, NextResponse } from "next/server"
+import connectDB from "@/lib/db"
+import Student from "@/lib/models/student"
+import Faculty from "@/lib/models/faculty"
+import Class from "@/lib/models/class"
+import mongoose from "mongoose"
 
+/**
+ * GET /api/student
+ * Get all students with faculty and class information
+ */
 export async function GET() {
   try {
-    const db = await connectToDatabase()
-    const students = await db.collection("Student").find({}).toArray()
-
-    // Fetch faculty and class information
-    const facultyIds = [...new Set(students.map((student) => student.FucaltyId))]
-    const classIds = [...new Set(students.map((student) => student.classId))]
-
-    const faculties = await db
-      .collection("Faculty")
-      .find({
-        _id: { $in: facultyIds.map((id) => new ObjectId(id)) },
+    await connectDB()
+    const students = await Student.find({})
+      .populate("facultyId", "name")
+      .populate({
+        path: "classId",
+        select: "semester type classMode",
+        populate: {
+          path: "departmentId",
+          select: "name",
+        },
       })
-      .toArray()
+      .sort({ createdAt: -1 })
 
-    const classes = await db
-      .collection("Classes")
-      .find({
-        _id: { $in: classIds.map((id) => new ObjectId(id)) },
-      })
-      .toArray()
-
-    const facultyMap = faculties.reduce((map, faculty) => {
-      map[faculty._id.toString()] = faculty.Name
-      return map
-    }, {})
-
-    const classMap = classes.reduce((map, cls) => {
-      map[cls._id.toString()] = `${cls.semesterName}-${cls.type} (${cls.classMode})`
-      return map
-    }, {})
-
-    const enrichedStudents = students.map((student) => ({
-      ...student,
-      FacultyName: facultyMap[student.FucaltyId] || "Unknown Faculty",
-      ClassName: classMap[student.classId] || "Unknown Class",
-    }))
-
-    return NextResponse.json(enrichedStudents)
-  } catch (error) {
-    console.error("Error fetching students:", error)
-    return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 })
+    return NextResponse.json(students, { status: 200 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
-export async function POST(request: Request) {
+/**
+ * POST /api/student
+ * Create a new student
+ */
+export async function POST(request: NextRequest) {
   try {
-    const { FucaltyId, classId, NAME, GENDER, ParentPhone, phone, ID, passcode, status } = await request.json()
+    await connectDB()
 
-    if (!FucaltyId || !classId || !NAME || !ParentPhone || !ID) {
-      return NextResponse.json({ error: "Required fields are missing" }, { status: 400 })
+    const body = await request.json()
+
+    // Validate request body
+    if (!body.name || !body.facultyId || !body.classId || !body.parentPhone || !body.studentId) {
+      return NextResponse.json(
+        {
+          error: "Name, faculty ID, class ID, parent phone, and student ID are required",
+        },
+        { status: 400 },
+      )
     }
 
-    const db = await connectToDatabase()
+    // Validate IDs
+    if (!mongoose.Types.ObjectId.isValid(body.facultyId) || !mongoose.Types.ObjectId.isValid(body.classId)) {
+      return NextResponse.json({ error: "Invalid faculty or class ID" }, { status: 400 })
+    }
 
-    // Check if ID already exists
-    const existingStudent = await db.collection("Student").findOne({ ID })
+    // Check if faculty exists
+    const faculty = await Faculty.findById(body.facultyId)
+    if (!faculty) {
+      return NextResponse.json({ error: "Faculty not found" }, { status: 404 })
+    }
+
+    // Check if class exists
+    const classObj = await Class.findById(body.classId)
+    if (!classObj) {
+      return NextResponse.json({ error: "Class not found" }, { status: 404 })
+    }
+
+    // Check if student ID already exists
+    const existingStudent = await Student.findOne({ studentId: body.studentId })
     if (existingStudent) {
       return NextResponse.json({ error: "Student ID already exists" }, { status: 400 })
     }
 
-    const result = await db.collection("Student").insertOne({
-      FucaltyId,
-      classId,
-      NAME,
-      GENDER: GENDER || null,
-      ParentPhone,
-      phone: phone || null,
-      ID,
-      passcode: passcode || "1234",
-      status: status || "active",
+    // Create new student
+    const student = await Student.create({
+      name: body.name,
+      facultyId: body.facultyId,
+      classId: body.classId,
+      gender: body.gender,
+      parentPhone: body.parentPhone,
+      phone: body.phone,
+      studentId: body.studentId,
+      passcode: body.passcode || "1234",
+      status: body.status || "active",
     })
 
-    return NextResponse.json(
+    // Populate faculty and class information
+    await student.populate([
+      { path: "facultyId", select: "name" },
       {
-        id: result.insertedId,
-        FucaltyId,
-        classId,
-        NAME,
-        GENDER,
-        ParentPhone,
-        phone,
-        ID,
-        passcode: passcode || "1234",
-        status: status || "active",
-      },
-      { status: 201 },
-    )
-  } catch (error) {
-    console.error("Error creating student:", error)
-    return NextResponse.json({ error: "Failed to create student" }, { status: 500 })
-  }
-}
-
-export async function PUT(request: Request) {
-  try {
-    const { id, FucaltyId, classId, NAME, GENDER, ParentPhone, phone, ID, passcode, status } = await request.json()
-
-    if (!id || !FucaltyId || !classId || !NAME || !ParentPhone || !ID) {
-      return NextResponse.json({ error: "Required fields are missing" }, { status: 400 })
-    }
-
-    const db = await connectToDatabase()
-
-    // Check if ID already exists for another student
-    const existingStudent = await db.collection("Student").findOne({
-      ID,
-      _id: { $ne: new ObjectId(id) },
-    })
-
-    if (existingStudent) {
-      return NextResponse.json({ error: "Student ID already exists" }, { status: 400 })
-    }
-
-    await db.collection("Student").updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: {
-          FucaltyId,
-          classId,
-          NAME,
-          GENDER,
-          ParentPhone,
-          phone,
-          ID,
-          passcode,
-          status,
+        path: "classId",
+        select: "semester type classMode",
+        populate: {
+          path: "departmentId",
+          select: "name",
         },
       },
-    )
+    ])
 
-    return NextResponse.json({
-      id,
-      FucaltyId,
-      classId,
-      NAME,
-      GENDER,
-      ParentPhone,
-      phone,
-      ID,
-      passcode,
-      status,
-    })
-  } catch (error) {
-    console.error("Error updating student:", error)
-    return NextResponse.json({ error: "Failed to update student" }, { status: 500 })
-  }
-}
-
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get("id")
-
-    if (!id) {
-      return NextResponse.json({ error: "ID is required" }, { status: 400 })
-    }
-
-    const db = await connectToDatabase()
-    await db.collection("Student").deleteOne({ _id: new ObjectId(id) })
-
-    return NextResponse.json({ message: "Student deleted successfully" })
-  } catch (error) {
-    console.error("Error deleting student:", error)
-    return NextResponse.json({ error: "Failed to delete student" }, { status: 500 })
+    return NextResponse.json(student, { status: 201 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

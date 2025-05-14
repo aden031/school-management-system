@@ -1,105 +1,63 @@
-import { NextResponse } from "next/server"
-import { connectToDatabase } from "@/lib/db"
-import { ObjectId } from "mongodb"
+import { type NextRequest, NextResponse } from "next/server"
+import connectDB from "@/lib/db"
+import Department from "@/lib/models/department"
+import Faculty from "@/lib/models/faculty"
+import mongoose from "mongoose"
 
+/**
+ * GET /api/department
+ * Get all departments with faculty information
+ */
 export async function GET() {
   try {
-    const db = await connectToDatabase()
-    const departments = await db.collection("Department").find({}).toArray()
+    await connectDB()
+    const departments = await Department.find({}).populate("facultyId", "name").sort({ createdAt: -1 })
 
-    // Fetch faculty names for each department
-    const facultyIds = [...new Set(departments.map((dept) => dept.FucaltyId))]
-    const faculties = await db
-      .collection("Faculty")
-      .find({
-        _id: { $in: facultyIds.map((id) => new ObjectId(id)) },
-      })
-      .toArray()
-
-    const facultyMap = faculties.reduce((map, faculty) => {
-      map[faculty._id.toString()] = faculty.Name
-      return map
-    }, {})
-
-    const enrichedDepartments = departments.map((dept) => ({
-      ...dept,
-      FacultyName: facultyMap[dept.FucaltyId] || "Unknown Faculty",
-    }))
-
-    return NextResponse.json(enrichedDepartments)
-  } catch (error) {
-    console.error("Error fetching departments:", error)
-    return NextResponse.json({ error: "Failed to fetch departments" }, { status: 500 })
+    return NextResponse.json(departments, { status: 200 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
 
-export async function POST(request: Request) {
+/**
+ * POST /api/department
+ * Create a new department
+ */
+export async function POST(request: NextRequest) {
   try {
-    const { FucaltyId, Name, SCount, DepartmentMode } = await request.json()
+    await connectDB()
 
-    if (!FucaltyId || !Name || SCount === undefined || !DepartmentMode) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 })
+    const body = await request.json()
+
+    // Validate request body
+    if (!body.name || !body.facultyId || !body.departmentMode) {
+      return NextResponse.json({ error: "Name, facultyId, and departmentMode are required" }, { status: 400 })
     }
 
-    const db = await connectToDatabase()
-    const result = await db.collection("Department").insertOne({
-      FucaltyId,
-      Name,
-      SCount,
-      DepartmentMode,
+    // Validate facultyId
+    if (!mongoose.Types.ObjectId.isValid(body.facultyId)) {
+      return NextResponse.json({ error: "Invalid faculty ID" }, { status: 400 })
+    }
+
+    // Check if faculty exists
+    const faculty = await Faculty.findById(body.facultyId)
+    if (!faculty) {
+      return NextResponse.json({ error: "Faculty not found" }, { status: 404 })
+    }
+
+    // Create new department
+    const department = await Department.create({
+      name: body.name,
+      facultyId: body.facultyId,
+      studentCount: body.studentCount || 0,
+      departmentMode: body.departmentMode,
     })
 
-    return NextResponse.json(
-      {
-        id: result.insertedId,
-        FucaltyId,
-        Name,
-        SCount,
-        DepartmentMode,
-      },
-      { status: 201 },
-    )
-  } catch (error) {
-    console.error("Error creating department:", error)
-    return NextResponse.json({ error: "Failed to create department" }, { status: 500 })
-  }
-}
+    // Populate faculty information
+    await department.populate("facultyId", "name")
 
-export async function PUT(request: Request) {
-  try {
-    const { id, FucaltyId, Name, SCount, DepartmentMode } = await request.json()
-
-    if (!id || !FucaltyId || !Name || SCount === undefined || !DepartmentMode) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 })
-    }
-
-    const db = await connectToDatabase()
-    await db
-      .collection("Department")
-      .updateOne({ _id: new ObjectId(id) }, { $set: { FucaltyId, Name, SCount, DepartmentMode } })
-
-    return NextResponse.json({ id, FucaltyId, Name, SCount, DepartmentMode })
-  } catch (error) {
-    console.error("Error updating department:", error)
-    return NextResponse.json({ error: "Failed to update department" }, { status: 500 })
-  }
-}
-
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get("id")
-
-    if (!id) {
-      return NextResponse.json({ error: "ID is required" }, { status: 400 })
-    }
-
-    const db = await connectToDatabase()
-    await db.collection("Department").deleteOne({ _id: new ObjectId(id) })
-
-    return NextResponse.json({ message: "Department deleted successfully" })
-  } catch (error) {
-    console.error("Error deleting department:", error)
-    return NextResponse.json({ error: "Failed to delete department" }, { status: 500 })
+    return NextResponse.json(department, { status: 201 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
