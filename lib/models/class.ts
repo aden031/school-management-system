@@ -40,7 +40,7 @@ classMode: {
     type: {
       type: String,
       required: [true, "Class type is required"],
-      enum: ["A", "B", "C", "D"],
+      enum: ["A", "B", "C", "D" , "E"],
       uppercase: true,
     },
     status: {
