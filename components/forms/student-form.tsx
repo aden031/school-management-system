@@ -1,6 +1,5 @@
-"use client"
-
 import { useState, useEffect } from "react"
+import axios from "axios"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -17,38 +16,18 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { type Student, faculties, classes } from "@/components/data-tables/student-data-table"
 import { Edit, PlusCircle, Trash2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 
-// Define the form schema
+const API_BASE = "/api/student"
+
 const formSchema = z.object({
-  facultyId: z.string({
-    required_error: "Please select a faculty.",
-  }),
-  classId: z.string({
-    required_error: "Please select a class.",
-  }),
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  gender: z.enum(["Male", "Female"], {
-    required_error: "Please select a gender.",
-  }),
-  parentPhone: z.string().min(10, {
-    message: "Parent phone must be at least 10 characters.",
-  }),
-  phone: z.string().min(10, {
-    message: "Phone must be at least 10 characters.",
-  }),
-  studentId: z.string().min(1, {
-    message: "Student ID is required.",
-  }),
-  passcode: z.string().default("1234"),
-  status: z.enum(["active", "inactive"], {
-    required_error: "Please select a status.",
-  }),
+  facultyId: z.string().nonempty("Please select a faculty."),
+  classId: z.string().nonempty("Please select a class."),
+  name: z.string().min(2, "Name must be at least 2 characters."),
+  parentPhone: z.string().min(10, "Parent phone must be at least 10 characters."),
+  studentId: z.string().nonempty("Student ID is required."),
 })
 
 type StudentFormValues = z.infer<typeof formSchema>
@@ -60,59 +39,55 @@ interface StudentDialogProps {
 
 export function StudentDialog({ mode, student }: StudentDialogProps) {
   const [open, setOpen] = useState(false)
-  const [filteredClasses, setFilteredClasses] = useState(classes)
-
-  // Default values for the form
-  const defaultValues: Partial<StudentFormValues> = {
-    facultyId: student?.facultyId || "",
-    classId: student?.classId || "",
-    name: student?.name || "",
-    gender: student?.gender || "Male",
-    parentPhone: student?.parentPhone || "",
-    phone: student?.phone || "",
-    studentId: student?.studentId || "",
-    passcode: student?.passcode || "1234",
-    status: student?.status || "active",
-  }
-
-  // Initialize the form
-  const form = useForm<StudentFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues,
-  })
-
-  // Watch for faculty changes to filter classes
-  const facultyId = form.watch("facultyId")
+  const [faculties, setFaculties] = useState([])
+  const [classes, setClasses] = useState([])
 
   useEffect(() => {
-    if (facultyId) {
-      setFilteredClasses(classes.filter((cls) => cls.facultyId === facultyId))
-    } else {
-      setFilteredClasses(classes)
+    axios.get("/api/faculty").then((res) => setFaculties(res.data)).catch(console.error)
+    axios.get("/api/classes").then((res) => setClasses(res.data)).catch(console.error)
+  }, [])
+
+  const form = useForm<StudentFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      facultyId: student?.facultyId || "",
+      classId: student?.classId || "",
+      name: student?.name || "",
+      parentPhone: student?.parentPhone || "",
+      studentId: student?.studentId || "",
+    },
+  })
+
+  const onSubmit = async (data: StudentFormValues) => {
+    try {
+      const payload = data
+      if (mode === "add") await axios.post(API_BASE, payload)
+      if (mode === "edit" && student) await axios.put(`${API_BASE}/${student.id}`, payload)
+      setOpen(false)
+    } catch (error) {
+      console.error("Error submitting form:", error)
     }
-  }, [facultyId])
-
-  // Form submission handler
-  function onSubmit(data: StudentFormValues) {
-    // In a real app, you would send this data to your backend
-    console.log(data)
-    setOpen(false)
   }
 
-  // Delete handler
-  function onDelete() {
-    // In a real app, you would send a delete request to your backend
-    console.log("Deleting student:", student?.id)
-    setOpen(false)
+  const onDelete = async () => {
+    try {
+      if (student) await axios.delete(`${API_BASE}/${student.id}`)
+      setOpen(false)
+    } catch (error) {
+      console.error("Error deleting student:", error)
+    }
   }
+
+  useEffect(()=>{
+        console.log(classes)
+  } , [classes])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "add" ? (
           <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Student
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Student
           </Button>
         ) : mode === "edit" ? (
           <Button variant="outline" size="icon">
@@ -124,207 +99,83 @@ export function StudentDialog({ mode, student }: StudentDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {mode === "add" ? "Add Student" : mode === "edit" ? "Edit Student" : "Delete Student"}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "add"
-              ? "Add a new student to the system."
-              : mode === "edit"
-                ? "Make changes to the student information."
-                : "Are you sure you want to delete this student?"}
-          </DialogDescription>
+          <DialogTitle>{mode === "add" ? "Add Student" : mode === "edit" ? "Edit Student" : "Delete Student"}</DialogTitle>
+          <DialogDescription>{mode === "delete" ? "Are you sure you want to delete this student?" : "Fill in the student details."}</DialogDescription>
         </DialogHeader>
 
         {mode === "delete" ? (
-          <>
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Warning</AlertTitle>
-              <AlertDescription>
-                This action cannot be undone. This will permanently delete the student record from the system.
-              </AlertDescription>
-            </Alert>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={onDelete}>
-                Delete
-              </Button>
-            </DialogFooter>
-          </>
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertTitle>Warning</AlertTitle>
+            <AlertDescription>This action cannot be undone.</AlertDescription>
+            <Button variant="destructive" onClick={onDelete}>Confirm Delete</Button>
+          </Alert>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="facultyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Faculty</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a faculty" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {faculties.map((faculty) => (
-                          <SelectItem key={faculty.id} value={faculty.id}>
-                            {faculty.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl><Input placeholder="Student Name" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="classId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Class</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!facultyId}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a class" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {filteredClasses.map((cls) => (
-                          <SelectItem key={cls.id} value={cls.id}>
-                            {cls.departmentName} - Semester {cls.semesterName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="facultyId" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Faculty</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Faculty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {faculties.map((faculty) => (
+                        <SelectItem key={faculty._id} value={faculty._id}>{faculty.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Student name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="classId" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Class</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes.map((cls) => (
+                        <SelectItem key={cls._id} value={cls._id}>CMS-{cls.semester}-{cls.type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Gender</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a gender" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="parentPhone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Parent Phone</FormLabel>
+                  <FormControl><Input placeholder="Parent Phone" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              <FormField
-                control={form.control}
-                name="parentPhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Parent Phone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Parent phone number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Student phone number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="studentId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Student ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Student ID" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="passcode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Passcode</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Passcode" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormField control={form.control} name="studentId" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Student ID</FormLabel>
+                  <FormControl><Input placeholder="Student ID" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
               <DialogFooter>
-                <Button type="submit">{mode === "add" ? "Add" : "Save changes"}</Button>
+                <Button type="submit">{mode === "add" ? "Add" : "Save"}</Button>
               </DialogFooter>
             </form>
           </Form>

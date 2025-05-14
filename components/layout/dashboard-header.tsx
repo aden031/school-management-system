@@ -68,7 +68,7 @@ export function DashboardHeader({ sidebarOpen = true, onSidebarOpenChange, user 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <div className="flex h-8 w-8 p-3 items-center justify-center rounded-full bg-primary/10">
                 <span className="text-xs font-medium text-primary">
                   {user?.fullname?.substring(0, 2).toUpperCase() || "AD"}
                 </span>

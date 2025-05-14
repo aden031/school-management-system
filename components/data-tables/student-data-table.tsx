@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -17,166 +18,18 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { StudentDialog } from "@/components/forms/student-form"
 import { Badge } from "@/components/ui/badge"
-import type { Faculty } from "./faculty-data-table"
-import type { Classes } from "./classes-data-table"
 
 // Define the Student type
 export type Student = {
   id: string
-  facultyId: string
   facultyName: string
-  classId: string
   className: string
   name: string
-  gender: "Male" | "Female" 
   parentPhone: string
-  phone: string
-  studentId: string
+  studentId: number
   passcode: string
   status: "active" | "inactive"
 }
-
-// Sample data
-const data: Student[] = [
-  {
-    id: "1",
-    facultyId: "1",
-    facultyName: "Engineering",
-    classId: "1",
-    className: "Computer Science - Semester 1",
-    name: "John Doe",
-    gender: "Male",
-    parentPhone: "+1234567890",
-    phone: "+1234567891",
-    studentId: "ENG001",
-    passcode: "1234",
-    status: "active",
-  },
-  {
-    id: "2",
-    facultyId: "1",
-    facultyName: "Engineering",
-    classId: "2",
-    className: "Electrical Engineering - Semester 2",
-    name: "Jane Smith",
-    gender: "Female",
-    parentPhone: "+1234567892",
-    phone: "+1234567893",
-    studentId: "ENG002",
-    passcode: "1234",
-    status: "active",
-  },
-  {
-    id: "3",
-    facultyId: "2",
-    facultyName: "Business",
-    classId: "3",
-    className: "Marketing - Semester 3",
-    name: "Bob Johnson",
-    gender: "Male",
-    parentPhone: "+1234567894",
-    phone: "+1234567895",
-    studentId: "BUS001",
-    passcode: "1234",
-    status: "inactive",
-  },
-  {
-    id: "4",
-    facultyId: "2",
-    facultyName: "Business",
-    classId: "4",
-    className: "Finance - Semester 4",
-    name: "Alice Brown",
-    gender: "Female",
-    parentPhone: "+1234567896",
-    phone: "+1234567897",
-    studentId: "BUS002",
-    passcode: "1234",
-    status: "active",
-  },
-  {
-    id: "5",
-    facultyId: "3",
-    facultyName: "Medicine",
-    classId: "5",
-    className: "Nursing - Semester 1",
-    name: "Charlie Wilson",
-    gender: "Male",
-    parentPhone: "+1234567898",
-    phone: "+1234567899",
-    studentId: "MED001",
-    passcode: "1234",
-    status: "active",
-  },
-]
-
-// Sample faculties for the form
-export const faculties: Faculty[] = [
-  { id: "1", name: "Engineering" },
-  { id: "2", name: "Business" },
-  { id: "3", name: "Medicine" },
-  { id: "4", name: "Arts and Sciences" },
-  { id: "5", name: "Education" },
-]
-
-// Sample classes for the form
-export const classes: Classes[] = [
-  {
-    id: "1",
-    facultyId: "1",
-    facultyName: "Engineering",
-    departmentId: "1",
-    departmentName: "Computer Science",
-    semesterName: 1,
-    classMode: "full time",
-    type: "A",
-    status: "active",
-  },
-  {
-    id: "2",
-    facultyId: "1",
-    facultyName: "Engineering",
-    departmentId: "2",
-    departmentName: "Electrical Engineering",
-    semesterName: 2,
-    classMode: "part time",
-    type: "B",
-    status: "active",
-  },
-  {
-    id: "3",
-    facultyId: "2",
-    facultyName: "Business",
-    departmentId: "3",
-    departmentName: "Marketing",
-    semesterName: 3,
-    classMode: "full time",
-    type: "C",
-    status: "inactive",
-  },
-  {
-    id: "4",
-    facultyId: "2",
-    facultyName: "Business",
-    departmentId: "4",
-    departmentName: "Finance",
-    semesterName: 4,
-    classMode: "part time",
-    type: "D",
-    status: "active",
-  },
-  {
-    id: "5",
-    facultyId: "3",
-    facultyName: "Medicine",
-    departmentId: "5",
-    departmentName: "Nursing",
-    semesterName: 1,
-    classMode: "full time",
-    type: "A",
-    status: "active",
-  },
-]
 
 // Define columns
 const columns: ColumnDef<Student>[] = [
@@ -197,12 +50,8 @@ const columns: ColumnDef<Student>[] = [
     header: "Class",
   },
   {
-    accessorKey: "gender",
-    header: "Gender",
-  },
-  {
-    accessorKey: "phone",
-    header: "Phone",
+    accessorKey: "parentPhone",
+    header: "Parent Phone",
   },
   {
     accessorKey: "status",
@@ -216,7 +65,6 @@ const columns: ColumnDef<Student>[] = [
     id: "actions",
     cell: ({ row }) => {
       const student = row.original
-
       return (
         <div className="flex items-center gap-2">
           <StudentDialog mode="edit" student={student} />
@@ -228,11 +76,35 @@ const columns: ColumnDef<Student>[] = [
 ]
 
 export function StudentDataTable() {
+  const [students, setStudents] = useState<Student[]>([])
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await axios.get("/api/student")
+        const data = response.data.map((student: any) => ({
+          id: student._id,
+          facultyName: student.facultyId.name,
+          className: `${student.classId.departmentId.name} - Semester ${student.classId.semester}`,
+          name: student.name,
+          parentPhone: student.parentPhone,
+          studentId: student.studentId,
+          passcode: student.passcode,
+          status: student.status,
+        }))
+        setStudents(data)
+      } catch (error) {
+        console.error("Failed to fetch students", error)
+      }
+    }
+
+    fetchStudents()
+  }, [])
+
   const table = useReactTable({
-    data,
+    data: students,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -263,13 +135,11 @@ export function StudentDataTable() {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
