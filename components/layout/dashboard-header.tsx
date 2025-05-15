@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation"
 interface DashboardHeaderProps {
   sidebarOpen?: boolean
   onSidebarOpenChange?: (open: boolean) => void
-  user?: { name: string; email: string; role?: string } | null
+  user?: { name: string; email: string; fullname:string; role?: string } | null
 }
 
 export function DashboardHeader({ sidebarOpen = true, onSidebarOpenChange, user }: DashboardHeaderProps) {

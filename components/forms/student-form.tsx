@@ -43,7 +43,7 @@ interface Student {
 
 interface StudentDialogProps {
   mode: "add" | "edit" | "delete"
-  student?: Student
+  student?: any
   onDone: () => void
 }
 
