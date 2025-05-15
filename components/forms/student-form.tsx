@@ -17,34 +17,44 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Edit, PlusCircle, Trash2 } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
 
 const API_BASE = "/api/student"
 
 const formSchema = z.object({
-  facultyId: z.string().nonempty("Please select a faculty."),
-  classId: z.string().nonempty("Please select a class."),
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  parentPhone: z.string().min(10, "Parent phone must be at least 10 characters."),
-  studentId: z.string().nonempty("Student ID is required."),
+  facultyId: z.string().optional(),
+  classId: z.string().optional(),
+  name: z.string().min(2, "Name must be at least 2 characters.").optional(),
+  parentPhone: z.string().min(10, "Phone must be at least 10 digits.").optional(),
+  studentId: z.string().optional(),
+  status: z.enum(["active", "inactive"]).optional(),
 })
 
 type StudentFormValues = z.infer<typeof formSchema>
 
+interface Student {
+  _id: string
+  facultyId: string
+  classId: string
+  name: string
+  parentPhone: string
+  studentId: string
+  status: string
+}
+
 interface StudentDialogProps {
   mode: "add" | "edit" | "delete"
   student?: Student
+  onDone : ()=> void
 }
 
-export function StudentDialog({ mode, student }: StudentDialogProps) {
+export function StudentDialog({ mode, student , onDone }: StudentDialogProps) {
   const [open, setOpen] = useState(false)
   const [faculties, setFaculties] = useState([])
   const [classes, setClasses] = useState([])
 
   useEffect(() => {
-    axios.get("/api/faculty").then((res) => setFaculties(res.data)).catch(console.error)
-    axios.get("/api/classes").then((res) => setClasses(res.data)).catch(console.error)
+    axios.get("/api/faculty").then(res => setFaculties(res.data)).catch(console.error)
+    axios.get("/api/classes").then(res => setClasses(res.data)).catch(console.error)
   }, [])
 
   const form = useForm<StudentFormValues>({
@@ -55,32 +65,35 @@ export function StudentDialog({ mode, student }: StudentDialogProps) {
       name: student?.name || "",
       parentPhone: student?.parentPhone || "",
       studentId: student?.studentId || "",
+      status: student?.status || "active",
     },
   })
 
   const onSubmit = async (data: StudentFormValues) => {
     try {
-      const payload = data
+      const payload = {
+        ...student,
+        ...data,
+      }
+
       if (mode === "add") await axios.post(API_BASE, payload)
       if (mode === "edit" && student) await axios.put(`${API_BASE}/${student.id}`, payload)
-      setOpen(false)
+      onDone?.()
+        setOpen(false)
     } catch (error) {
-      console.error("Error submitting form:", error)
+      console.error("Submit error:", error)
     }
   }
 
   const onDelete = async () => {
     try {
       if (student) await axios.delete(`${API_BASE}/${student.id}`)
-      setOpen(false)
-    } catch (error) {
-      console.error("Error deleting student:", error)
+      onDone?.()
+        setOpen(false)
+    } catch (err) {
+      console.error("Delete error:", err)
     }
   }
-
-  useEffect(()=>{
-        console.log(classes)
-  } , [classes])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -102,17 +115,22 @@ export function StudentDialog({ mode, student }: StudentDialogProps) {
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{mode === "add" ? "Add Student" : mode === "edit" ? "Edit Student" : "Delete Student"}</DialogTitle>
-          <DialogDescription>{mode === "delete" ? "Are you sure you want to delete this student?" : "Fill in the student details."}</DialogDescription>
+          <DialogTitle>
+            {mode === "add" ? "Add Student" : mode === "edit" ? "Edit Student" : "Delete Student"}
+          </DialogTitle>
+          <DialogDescription>
+            {mode === "delete" ? "Are you sure you want to delete this student?" : "Fill in the student details."}
+          </DialogDescription>
         </DialogHeader>
 
         {mode === "delete" ? (
-          <Alert variant="destructive">
-            <AlertCircle />
-            <AlertTitle>Warning</AlertTitle>
-            <AlertDescription>This action cannot be undone.</AlertDescription>
-            <Button variant="destructive" onClick={onDelete}>Confirm Delete</Button>
-          </Alert>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">This action cannot be undone.</p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button variant="destructive" onClick={onDelete}>Confirm Delete</Button>
+            </DialogFooter>
+          </div>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -132,7 +150,7 @@ export function StudentDialog({ mode, student }: StudentDialogProps) {
                       <SelectValue placeholder="Select Faculty" />
                     </SelectTrigger>
                     <SelectContent>
-                      {faculties.map((faculty) => (
+                      {faculties.map((faculty: any) => (
                         <SelectItem key={faculty._id} value={faculty._id}>{faculty.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -149,7 +167,7 @@ export function StudentDialog({ mode, student }: StudentDialogProps) {
                       <SelectValue placeholder="Select Class" />
                     </SelectTrigger>
                     <SelectContent>
-                      {classes.map((cls) => (
+                      {classes.map((cls: any) => (
                         <SelectItem key={cls._id} value={cls._id}>CMS-{cls.semester}-{cls.type}</SelectItem>
                       ))}
                     </SelectContent>
@@ -161,7 +179,7 @@ export function StudentDialog({ mode, student }: StudentDialogProps) {
               <FormField control={form.control} name="parentPhone" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Parent Phone</FormLabel>
-                  <FormControl><Input placeholder="Parent Phone" {...field} /></FormControl>
+                  <FormControl><Input placeholder="Phone Number" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -174,8 +192,24 @@ export function StudentDialog({ mode, student }: StudentDialogProps) {
                 </FormItem>
               )} />
 
+              <FormField control={form.control} name="status" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || "active"}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <DialogFooter>
-                <Button type="submit">{mode === "add" ? "Add" : "Save"}</Button>
+                <Button type="submit">{mode === "add" ? "Add Student" : "Save Changes"}</Button>
               </DialogFooter>
             </form>
           </Form>
