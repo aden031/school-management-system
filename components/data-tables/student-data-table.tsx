@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import axios from "axios"
 import {
   type ColumnDef,
@@ -19,7 +19,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { StudentDialog } from "@/components/forms/student-form"
 import { Badge } from "@/components/ui/badge"
 
-// Define the Student type
 export type Student = {
   id: string
   facultyName: string
@@ -31,77 +30,84 @@ export type Student = {
   status: "active" | "inactive"
 }
 
-// Define columns
-const columns: ColumnDef<Student>[] = [
-  {
-    accessorKey: "studentId",
-    header: "Student ID",
-  },
-  {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
-    accessorKey: "facultyName",
-    header: "Faculty",
-  },
-  {
-    accessorKey: "className",
-    header: "Class",
-  },
-  {
-    accessorKey: "parentPhone",
-    header: "Parent Phone",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string
-      return <Badge variant={status === "active" ? "success" : "destructive"}>{status}</Badge>
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => {
-      const student = row.original
-      return (
-        <div className="flex items-center gap-2">
-          <StudentDialog mode="edit" student={student} />
-          <StudentDialog mode="delete" student={student} />
-        </div>
-      )
-    },
-  },
-]
-
 export function StudentDataTable() {
   const [students, setStudents] = useState<Student[]>([])
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchStudents = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await axios.get("/api/student")
+      const data = response.data.map((student: any) => ({
+        id: student._id,
+        facultyName: student.facultyId.name,
+        className: `${student.classId.departmentId.name} - Semester ${student.classId.semester}`,
+        name: student.name,
+        parentPhone: student.parentPhone,
+        studentId: student.studentId,
+        passcode: student.passcode,
+        status: student.status,
+      }))
+      setStudents(data)
+    } catch (error) {
+      console.error("Failed to fetch students", error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const response = await axios.get("/api/student")
-        const data = response.data.map((student: any) => ({
-          id: student._id,
-          facultyName: student.facultyId.name,
-          className: `${student.classId.departmentId.name} - Semester ${student.classId.semester}`,
-          name: student.name,
-          parentPhone: student.parentPhone,
-          studentId: student.studentId,
-          passcode: student.passcode,
-          status: student.status,
-        }))
-        setStudents(data)
-      } catch (error) {
-        console.error("Failed to fetch students", error)
-      }
-    }
-
     fetchStudents()
-  }, [])
+  }, [fetchStudents])
+
+  const columns: ColumnDef<Student>[] = [
+    {
+      accessorKey: "studentId",
+      header: "Student ID",
+    },
+    {
+      accessorKey: "name",
+      header: "Name",
+    },
+    {
+      accessorKey: "facultyName",
+      header: "Faculty",
+    },
+    {
+      accessorKey: "className",
+      header: "Class",
+    },
+    {
+      accessorKey: "parentPhone",
+      header: "Parent Phone",
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string
+        return (
+          <Badge variant={status === "active" ? "success" : "destructive"}>
+            {status}
+          </Badge>
+        )
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const student = row.original
+        return (
+          <div className="flex items-center gap-2">
+            <StudentDialog mode="edit" student={student} onDone={fetchStudents} />
+            <StudentDialog mode="delete" student={student} onDone={fetchStudents} />
+          </div>
+        )
+      },
+    },
+  ]
 
   const table = useReactTable({
     data: students,
@@ -127,7 +133,7 @@ export function StudentDataTable() {
           onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
-        <StudentDialog mode="add" />
+        <StudentDialog mode="add" onDone={fetchStudents} />
       </div>
 
       <div className="rounded-md border">
@@ -144,11 +150,19 @@ export function StudentDataTable() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
