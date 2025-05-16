@@ -29,7 +29,7 @@ export default function Home() {
             <TabsTrigger value="courses">Courses</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
-
+ 
           <TabsContent value="faculty">
             <FacultyDataTable />
           </TabsContent>

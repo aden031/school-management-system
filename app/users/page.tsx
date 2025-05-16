@@ -20,14 +20,14 @@ export default function Home() {
           </p>
         </div>
 
-        <Tabs defaultValue="department" className="w-full">
+        <Tabs defaultValue="users" className="w-full">
           <TabsList className="grid w-full grid-cols-1">
-            <TabsTrigger value="department">Department</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
  
 
-          <TabsContent value="department">
-            <DepartmentDataTable />
+          <TabsContent value="users">
+            <UsersDataTable />
           </TabsContent>
         </Tabs>
       </div>
