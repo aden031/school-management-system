@@ -39,18 +39,20 @@ export function StudentDataTable() {
   const fetchStudents = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await axios.get("/api/student")
-      const data = response.data.map((student: any) => ({
-        id: student._id,
-        facultyName: student.facultyId.name,
-        className: `${student.classId.departmentId.name} - Semester ${student.classId.semester}`,
-        name: student.name,
-        parentPhone: student.parentPhone,
-        studentId: student.studentId,
-        passcode: student.passcode,
-        status: student.status,
-      }))
-      setStudents(data)
+        const response = await axios.get("/api/student");
+        const data = (response.data || []).map((student: any) => ({
+          id: student?._id ?? "N/A",
+          facultyName: student?.facultyId?.name ?? "Unknown Faculty",
+          className: student?.classId?.departmentId?.name && student?.classId?.semester
+            ? `${student.classId.departmentId.name} - Semester ${student.classId.semester}`
+            : "Unknown Class",
+          name: student?.name ?? "Unnamed",
+          parentPhone: student?.parentPhone ?? "No Phone",
+          studentId: student?.studentId ?? "No ID",
+          passcode: student?.passcode ?? "No Passcode",
+          status: student?.status ?? "No Status",
+        }));
+        setStudents(data);
     } catch (error) {
       console.error("Failed to fetch students", error)
     } finally {
