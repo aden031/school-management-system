@@ -38,7 +38,7 @@ const formSchema = z.object({
   departmentId: z.string().min(1, { message: "Please select a department." }),
   semester: z.coerce.number().min(1).max(8),
   classMode: z.enum(["full time", "part time"]),
-  type: z.enum(["A", "B", "C", "D"]),
+  type: z.string().min(1, { message: "Type is required." }), // 🔥 changed here
   status: z.enum(["active", "inactive"]),
 })
 
@@ -50,7 +50,7 @@ interface Classes {
   departmentId: string
   semester: number
   classMode: "full time" | "part time"
-  type: "A" | "B" | "C" | "D"
+  type: string
   status: "active" | "inactive"
 }
 
@@ -266,25 +266,16 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
                 )}
               />
 
+              {/* 🔥 type is now a regular input field */}
               <FormField
                 control={form.control}
                 name="type"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="A">A</SelectItem>
-                        <SelectItem value="B">B</SelectItem>
-                        <SelectItem value="C">C</SelectItem>
-                        <SelectItem value="D">D</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input placeholder="Enter class type (any text)" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

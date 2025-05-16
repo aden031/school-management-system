@@ -7,7 +7,7 @@ export interface IClass extends Document {
   departmentId: mongoose.Types.ObjectId | IDepartment
   semester: number
   classMode: "full time" | "part time"
-  type: "A" | "B" | "C" | "D" | "E"
+  type: string
   status: string
 }
 
@@ -40,7 +40,6 @@ classMode: {
     type: {
       type: String,
       required: [true, "Class type is required"],
-      enum: ["A", "B", "C", "D" , "E"],
       uppercase: true,
     },
     status: {

@@ -27,7 +27,7 @@ const addUserSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(6, "Password must be at least 6 characters."),
-  title: z.enum(["user", "dean", "teacher", "officer"]),
+  title: z.enum(["dean", "teacher", "officer"]),
   status: z.enum(["active", "inactive"]),
 })
 
@@ -52,7 +52,7 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
     fullName: user?.fullName || "",
     email: user?.email || "",
     password: "",
-    title: user?.title || "user",
+    title: user?.title || "dean",
     status: user?.status || "active",
   }
 
@@ -233,7 +233,6 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
                         <SelectItem value="dean">Dean</SelectItem>
                         <SelectItem value="teacher">Teacher</SelectItem>
                         <SelectItem value="officer">Officer</SelectItem>
