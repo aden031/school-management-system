@@ -1,12 +1,7 @@
 "use client"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { FacultyDataTable } from "@/components/data-tables/faculty-data-table"
-import { DepartmentDataTable } from "@/components/data-tables/department-data-table"
-import { ClassesDataTable } from "@/components/data-tables/classes-data-table"
-import { StudentDataTable } from "@/components/data-tables/student-data-table"
 import { CoursesDataTable } from "@/components/data-tables/courses-data-table"
-import { UsersDataTable } from "@/components/data-tables/users-data-table"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 
 export default function Home() {
