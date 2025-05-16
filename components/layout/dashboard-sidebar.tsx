@@ -90,16 +90,6 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               <LayoutDashboard className="h-4 w-4" />
               {(open || isMobileOpen) && <span>Dashboard</span>}
             </Link>
-            <Link
-              href="/"
-              className={cn(
-                "flex items-center gap-3 rounded-md bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition-colors",
-                !open && "md:justify-center md:px-0",
-              )}
-            >
-              <Home className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>University Management</span>}
-            </Link>
             {(open || isMobileOpen) && (
               <div className="mt-2 px-3 text-xs font-semibold text-muted-foreground">Academic</div>
             )}
