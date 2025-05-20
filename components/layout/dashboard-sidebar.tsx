@@ -143,6 +143,16 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               <BookOpen className="h-4 w-4" />
               {(open || isMobileOpen) && <span>Courses</span>}
             </Link>
+            <Link
+              href="exams"
+              className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+              !open && "md:justify-center md:px-0",
+              )}
+            >
+              <GraduationCap className="h-4 w-4" />
+              {(open || isMobileOpen) && <span>Exams</span>}
+            </Link>
             {(open || isMobileOpen) && (
               <div className="mt-2 px-3 text-xs font-semibold text-muted-foreground">Administration</div>
             )}
