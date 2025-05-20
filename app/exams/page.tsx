@@ -1,7 +1,6 @@
 "use client"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DepartmentDataTable } from "@/components/data-tables/department-data-table"
 import DashboardLayout from "@/components/layout/dashboard-layout"
 import { ExamTypeDataTable } from "@/components/data-tables/exam-type-data-table"
 import { ExamDataTable } from "@/components/data-tables/exam-data-table"
