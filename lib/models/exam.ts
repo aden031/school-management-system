@@ -1,39 +1,38 @@
-import mongoose, { Schema, type Document, type Model } from "mongoose"
-import type { IClass } from "./class"
+import mongoose, { Schema, type Document, type Model } from 'mongoose'
 
 export interface IExam extends Document {
-  classId: mongoose.Types.ObjectId | IClass
-  subject: string
+  studentId: mongoose.Types.ObjectId
+  examTypeId: mongoose.Types.ObjectId
+  courseId: mongoose.Types.ObjectId
+  marksObtained: number
   date: Date
-  durationMinutes: number
-  examType: "midterm" | "final" | "quiz"
 }
 
-const ExamSchema: Schema = new Schema(
+const ExamSchema: Schema<IExam> = new Schema(
   {
-    classId: {
+    studentId: {
       type: Schema.Types.ObjectId,
-      ref: "Class",
-      required: [true, "Class ID is required"],
+      ref: 'Student',
+      required: [true, 'Student ID is required'],
     },
-    subject: {
-      type: String,
-      required: [true, "Subject is required"],
-      trim: true,
+    examTypeId: {
+      type: Schema.Types.ObjectId,
+      ref: 'ExamType',
+      required: [true, 'Exam Type is required'],
+    },
+    courseId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Course',
+      required: [true, 'Course ID is required'],
+    },
+    marksObtained: {
+      type: Number,
+      required: [true, 'Marks obtained is required'],
+      min: [0, 'Marks cannot be negative'],
     },
     date: {
       type: Date,
-      required: [true, "Exam date is required"],
-    },
-    durationMinutes: {
-      type: Number,
-      required: [true, "Duration is required"],
-      min: [10, "Minimum duration is 10 minutes"],
-    },
-    examType: {
-      type: String,
-      enum: ["midterm", "final", "quiz"],
-      required: [true, "Exam type is required"],
+      required: [true, 'Exam date is required'],
     },
   },
   {
@@ -42,5 +41,4 @@ const ExamSchema: Schema = new Schema(
   }
 )
 
-export const Exam: Model<IExam> =
-  mongoose.models.Exam || mongoose.model<IExam>("Exam", ExamSchema)
+export const Exam: Model<IExam> = mongoose.models.Exam || mongoose.model<IExam>('Exam', ExamSchema)
