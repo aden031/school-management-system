@@ -38,12 +38,10 @@ export default function ManagementPage() {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="overflow-x-auto">
-            <TabsList className="inline-flex min-w-max w-full mb-6">
-              <TabsTrigger value="fee">Fee</TabsTrigger>
+        <Tabs defaultValue="fee" className="w-full">
+            <TabsList className="w-full mb-6">
+              <TabsTrigger value="fee" className="w-full">Fee</TabsTrigger>
             </TabsList>
-          </div>
 
 
           <TabsContent value="fee">
