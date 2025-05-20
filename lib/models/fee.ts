@@ -40,10 +40,7 @@ const FeeSchema: Schema<IFee> = new Schema(
     },
     balance: {
       type: Number,
-      required: true,
-      default: function (this: IFee) {
-        return this.amount - this.amountPaid
-      },
+      required: true
     },
     status: {
       type: String,
@@ -65,20 +62,5 @@ const FeeSchema: Schema<IFee> = new Schema(
   }
 )
 
-// Optional: keep balance and status in sync on save
-FeeSchema.pre("save", function (next) {
-  this.balance = this.amount - this.amountPaid
-
-  if (this.amountPaid >= this.amount) {
-    this.status = "paid"
-    this.balance = 0
-  } else if (this.amountPaid > 0) {
-    this.status = "partial"
-  } else {
-    this.status = "unpaid"
-  }
-
-  next()
-})
 
 export const Fee: Model<IFee> = mongoose.models.Fee || mongoose.model<IFee>("Fee", FeeSchema)
