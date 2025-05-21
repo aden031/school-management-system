@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { StudentDialog } from "@/components/forms/student-form"
 import { Badge } from "@/components/ui/badge"
+import {StudentFileUpload } from "../forms/students-file-upload"
 
 export type Student = {
   id: string
@@ -135,7 +136,8 @@ export function StudentDataTable() {
           onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
-        <StudentDialog mode="add" onDone={fetchStudents} />
+        <StudentFileUpload onDone={fetchStudents}/>
+        <StudentDialog mode="add" onDone={fetchStudents} /> 
       </div>
 
       <div className="rounded-md border">

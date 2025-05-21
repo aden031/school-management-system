@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -17,14 +16,30 @@ import { FileUp, Download, AlertCircle, CheckCircle, Loader2 } from "lucide-reac
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import * as XLSX from "xlsx"
 
-export function AttendanceFileUpload() {
+export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
   const [open, setOpen] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [success, setSuccess] = useState(false)
+  const [faculties, setFaculties] = useState<any[]>([])
+  const [classes, setClasses] = useState<any[]>([])
+  const [selectedFaculty, setSelectedFaculty] = useState<string>("")
+  const [selectedClass, setSelectedClass] = useState<string>("")
+
+  useEffect(() => {
+    fetch("/api/faculty")
+      .then((res) => res.json())
+      .then(setFaculties)
+
+    fetch("/api/classes")
+      .then((res) => res.json())
+      .then(setClasses)
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -35,7 +50,6 @@ export function AttendanceFileUpload() {
       return
     }
 
-    // Check file type
     const fileType = selectedFile.type
     if (
       fileType !== "application/vnd.ms-excel" &&
@@ -47,7 +61,6 @@ export function AttendanceFileUpload() {
       return
     }
 
-    // Check file size (max 5MB)
     if (selectedFile.size > 5 * 1024 * 1024) {
       setError("File size should be less than 5MB.")
       setFile(null)
@@ -58,7 +71,10 @@ export function AttendanceFileUpload() {
   }
 
   const handleUpload = async () => {
-    if (!file) return
+    if (!file || !selectedFaculty || !selectedClass) {
+      setError("Please select faculty, class, and upload a file.")
+      return
+    }
 
     setUploading(true)
     setProgress(0)
@@ -66,17 +82,32 @@ export function AttendanceFileUpload() {
     setError(null)
 
     try {
-      // Simulate file upload with progress
-      for (let i = 0; i <= 100; i += 10) {
+      const data = await file.arrayBuffer()
+      const workbook = XLSX.read(data, { type: "array" })
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]]
+      const json = XLSX.utils.sheet_to_json(worksheet)
+
+      const students = json.map((student: any) => ({
+        ...student,
+        facultyId: selectedFaculty,
+        classId: selectedClass,
+      }))
+      const res = await fetch("/api/student/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ students }),
+      })
+
+      if (!res.ok) throw new Error("Upload failed")
+
+      // simulate progress UI
+      for (let i = 0; i <= 100; i += 20) {
         await new Promise((resolve) => setTimeout(resolve, 200))
         setProgress(i)
       }
 
-      // In a real app, you would send the file to your backend
-      console.log("Uploading file:", file.name)
-
-      // Simulate successful upload
       setSuccess(true)
+      onDone?.()
       setTimeout(() => {
         setOpen(false)
         setFile(null)
@@ -84,15 +115,11 @@ export function AttendanceFileUpload() {
         setSuccess(false)
       }, 1500)
     } catch (err) {
+      console.error(err)
       setError("An error occurred while uploading the file. Please try again.")
     } finally {
       setUploading(false)
     }
-  }
-
-  const downloadTemplate = () => {
-    // In a real app, you would provide a download link to a template file
-    console.log("Downloading template")
   }
 
   return (
@@ -100,32 +127,63 @@ export function AttendanceFileUpload() {
       <DialogTrigger asChild>
         <Button variant="outline">
           <FileUp className="mr-2 h-4 w-4" />
-          Upload Attendance
+          Upload Students
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Upload Attendance Data</DialogTitle>
+          <DialogTitle>Upload Student Data</DialogTitle>
           <DialogDescription>
-            Upload an Excel or CSV file with attendance data. Make sure to use the correct format.
+            Select faculty and class, then upload Excel or CSV file with student data.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <Button variant="outline" onClick={downloadTemplate} className="w-full">
-            <Download className="mr-2 h-4 w-4" />
-            Download Template
-          </Button>
+          <Select onValueChange={setSelectedFaculty}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Faculty" />
+            </SelectTrigger>
+            <SelectContent>
+              {faculties.map((fac) => (
+                <SelectItem key={fac._id} value={fac._id}>{fac.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select onValueChange={setSelectedClass}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Class" />
+            </SelectTrigger>
+            <SelectContent>
+              {classes.map((cls) => (
+                <SelectItem key={cls._id} value={cls._id}>
+                  {cls.type} ({cls.classMode})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Input
-              id="attendance-file"
+              id="student-file"
               type="file"
               accept=".xlsx,.xls,.csv"
               onChange={handleFileChange}
               disabled={uploading}
             />
             {file && <p className="text-xs text-muted-foreground">Selected: {file.name}</p>}
+
+            <div className="text-xs text-muted-foreground">
+              <p className="font-semibold">Required file structure:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li><code>name</code></li>
+                <li><code>gender</code> (e.g. "Male", "Female")</li>
+                <li><code>parentPhone</code> (numeric, more than 10 digits)</li>
+                <li><code>phone</code> (numeric, more than 10 digits)</li>
+                <li><code>studentId</code> (numeric)</li>
+                <li><code>status</code> (either "active" or "inactive")</li>
+              </ul>
+            </div>
           </div>
 
           {error && (
@@ -151,23 +209,18 @@ export function AttendanceFileUpload() {
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertTitle className="text-green-600">Success</AlertTitle>
               <AlertDescription className="text-green-600">
-                File uploaded successfully. Attendance data has been imported.
+                Students uploaded successfully.
               </AlertDescription>
             </Alert>
           )}
         </div>
 
         <DialogFooter>
-          <Button type="submit" onClick={handleUpload} disabled={!file || uploading} className="w-full sm:w-auto">
+          <Button onClick={handleUpload} disabled={!file || uploading} className="w-full sm:w-auto">
             {uploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Uploading...
-              </>
-            ) : success ? (
-              <>
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Uploaded!
               </>
             ) : (
               "Upload"

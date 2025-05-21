@@ -49,10 +49,6 @@ const StudentSchema: Schema = new Schema(
       required: [true, "Student ID is required"],
       unique: true,
     },
-    passcode: {
-      type: String,
-      default: "1234",
-    },
     status: {
       type: String,
       enum: ["active", "inactive"],
