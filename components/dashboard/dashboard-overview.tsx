@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
   BarChart3,
@@ -21,6 +21,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import axios from "axios"
 
 interface DashboardOverviewProps {
   user: {
@@ -36,7 +37,12 @@ interface DashboardOverviewProps {
 
 export function DashboardOverview({ user }: DashboardOverviewProps) {
   const [activeTab, setActiveTab] = useState("overview")
-
+  const [stats, setStats] = useState<{
+    totalStudents: number
+    totalFaculty: number
+    totalDepartments: number
+    totalCourses: number
+  } | null>(null)
   // Get current time of day for greeting
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -44,6 +50,13 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
     if (hour < 18) return "Good afternoon"
     return "Good evening"
   }
+
+  useEffect(()=>{
+      axios.get('/api/stats').then(data=>{
+        setStats(data.data)
+      })
+  },[])
+
 
   return (
     <div className="flex flex-col gap-8">
@@ -69,25 +82,25 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatsCard
               title="Total Students"
-              value="2,856"
+              value={`${stats?.totalStudents}`}
               description="+12% from last month"
               icon={<Users className="h-5 w-5 text-muted-foreground" />}
             />
             <StatsCard
               title="Active Courses"
-              value="124"
+              value={`${stats?.totalCourses}`}
               description="Across 8 departments"
               icon={<BookOpen className="h-5 w-5 text-muted-foreground" />}
             />
             <StatsCard
               title="Faculties"
-              value="86"
+              value={`${stats?.totalFaculty}`}
               description="12 new this semester"
               icon={<GraduationCap className="h-5 w-5 text-muted-foreground" />}
             />
             <StatsCard
               title="Total Departments"
-              value="86"
+              value={`${stats?.totalDepartments}`}
               description="12 new this semester"
               icon={<GraduationCap className="h-5 w-5 text-muted-foreground" />}
             />
