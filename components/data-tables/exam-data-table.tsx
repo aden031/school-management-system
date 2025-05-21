@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -17,9 +17,6 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ExamDialog } from "@/components/forms/exam-form"
 import { Badge } from "@/components/ui/badge"
-import type { Student } from "@/components/data-tables/student-data-table"
-import type { Course } from "@/components/data-tables/courses-data-table"
-import type { ExamType } from "@/components/data-tables/exam-type-data-table"
 import { format } from "date-fns"
 
 // Define the Exam type
@@ -36,221 +33,6 @@ export type Exam = {
   date: string
 }
 
-// Sample data
-const data: Exam[] = [
-  {
-    id: "1",
-    studentId: "1",
-    studentName: "John Doe",
-    examTypeId: "1",
-    examTypeName: "midterm",
-    courseId: "1",
-    courseName: "Introduction to Programming",
-    marksObtained: 25,
-    totalMarks: 30,
-    date: "2023-10-15",
-  },
-  {
-    id: "2",
-    studentId: "2",
-    studentName: "Jane Smith",
-    examTypeId: "2",
-    examTypeName: "final",
-    courseId: "1",
-    courseName: "Introduction to Programming",
-    marksObtained: 45,
-    totalMarks: 50,
-    date: "2023-12-20",
-  },
-  {
-    id: "3",
-    studentId: "3",
-    studentName: "Bob Johnson",
-    examTypeId: "3",
-    examTypeName: "quiz",
-    courseId: "2",
-    courseName: "Data Structures",
-    marksObtained: 8,
-    totalMarks: 10,
-    date: "2023-09-05",
-  },
-  {
-    id: "4",
-    studentId: "4",
-    studentName: "Alice Brown",
-    examTypeId: "1",
-    examTypeName: "midterm",
-    courseId: "3",
-    courseName: "Circuit Analysis",
-    marksObtained: 22,
-    totalMarks: 30,
-    date: "2023-10-18",
-  },
-  {
-    id: "5",
-    studentId: "5",
-    studentName: "Charlie Wilson",
-    examTypeId: "2",
-    examTypeName: "final",
-    courseId: "4",
-    courseName: "Marketing Principles",
-    marksObtained: 42,
-    totalMarks: 50,
-    date: "2023-12-22",
-  },
-]
-
-// Sample students for the form
-export const students: Student[] = [
-  {
-    id: "1",
-    facultyId: "1",
-    facultyName: "Engineering",
-    classId: "1",
-    className: "Computer Science - Semester 1",
-    name: "John Doe",
-    gender: "Male",
-    parentPhone: "+1234567890",
-    phone: "+1234567891",
-    studentId: "ENG001",
-    passcode: "1234",
-    status: "active",
-  },
-  {
-    id: "2",
-    facultyId: "1",
-    facultyName: "Engineering",
-    classId: "2",
-    className: "Electrical Engineering - Semester 2",
-    name: "Jane Smith",
-    gender: "Female",
-    parentPhone: "+1234567892",
-    phone: "+1234567893",
-    studentId: "ENG002",
-    passcode: "1234",
-    status: "active",
-  },
-  {
-    id: "3",
-    facultyId: "2",
-    facultyName: "Business",
-    classId: "3",
-    className: "Marketing - Semester 3",
-    name: "Bob Johnson",
-    gender: "Male",
-    parentPhone: "+1234567894",
-    phone: "+1234567895",
-    studentId: "BUS001",
-    passcode: "1234",
-    status: "inactive",
-  },
-  {
-    id: "4",
-    facultyId: "2",
-    facultyName: "Business",
-    classId: "4",
-    className: "Finance - Semester 4",
-    name: "Alice Brown",
-    gender: "Female",
-    parentPhone: "+1234567896",
-    phone: "+1234567897",
-    studentId: "BUS002",
-    passcode: "1234",
-    status: "active",
-  },
-  {
-    id: "5",
-    facultyId: "3",
-    facultyName: "Medicine",
-    classId: "5",
-    className: "Nursing - Semester 1",
-    name: "Charlie Wilson",
-    gender: "Other",
-    parentPhone: "+1234567898",
-    phone: "+1234567899",
-    studentId: "MED001",
-    passcode: "1234",
-    status: "active",
-  },
-]
-
-// Sample courses for the form
-export const courses: Course[] = [
-  {
-    id: "1",
-    departmentId: "1",
-    departmentName: "Computer Science",
-    courseName: "Introduction to Programming",
-    code: "CS101",
-    semester: 1,
-    facultyId: "1",
-    facultyName: "Engineering",
-  },
-  {
-    id: "2",
-    departmentId: "1",
-    departmentName: "Computer Science",
-    courseName: "Data Structures",
-    code: "CS201",
-    semester: 2,
-    facultyId: "1",
-    facultyName: "Engineering",
-  },
-  {
-    id: "3",
-    departmentId: "2",
-    departmentName: "Electrical Engineering",
-    courseName: "Circuit Analysis",
-    code: "EE101",
-    semester: 1,
-    facultyId: "1",
-    facultyName: "Engineering",
-  },
-  {
-    id: "4",
-    departmentId: "3",
-    departmentName: "Marketing",
-    courseName: "Marketing Principles",
-    code: "MKT101",
-    semester: 1,
-    facultyId: "2",
-    facultyName: "Business",
-  },
-  {
-    id: "5",
-    departmentId: "4",
-    departmentName: "Finance",
-    courseName: "Financial Accounting",
-    code: "FIN101",
-    semester: 1,
-    facultyId: "2",
-    facultyName: "Business",
-  },
-]
-
-// Sample exam types for the form
-export const examTypes: ExamType[] = [
-  {
-    id: "1",
-    name: "midterm",
-    marks: 30,
-    description: "Mid-semester examination",
-  },
-  {
-    id: "2",
-    name: "final",
-    marks: 50,
-    description: "End of semester examination",
-  },
-  {
-    id: "3",
-    name: "quiz",
-    marks: 10,
-    description: "Regular class quiz",
-  },
-]
-
-// Define columns
 const columns: ColumnDef<Exam>[] = [
   {
     accessorKey: "studentName",
@@ -310,7 +92,6 @@ const columns: ColumnDef<Exam>[] = [
     id: "actions",
     cell: ({ row }) => {
       const exam = row.original
-
       return (
         <div className="flex items-center gap-2">
           <ExamDialog mode="edit" exam={exam} />
@@ -324,6 +105,35 @@ const columns: ColumnDef<Exam>[] = [
 export function ExamDataTable() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [data, setData] = useState<Exam[]>([])
+
+  useEffect(() => {
+    const fetchExams = async () => {
+      try {
+        const res = await fetch("/api/exams")
+        const raw = await res.json()
+
+        const formatted: Exam[] = raw.map((item: any) => ({
+          id: item._id,
+          studentId: item.studentId._id,
+          studentName: item.studentId.name,
+          examTypeId: item.examTypeId._id,
+          examTypeName: item.examTypeId.name,
+          courseId: item.courseId._id,
+          courseName: item.courseId.courseName,
+          marksObtained: item.marksObtained,
+          totalMarks: item.examTypeId.marks,
+          date: item.date,
+        }))
+
+        setData(formatted)
+      } catch (err) {
+        console.error("Failed to fetch exams:", err)
+      }
+    }
+
+    fetchExams()
+  }, [])
 
   const table = useReactTable({
     data,
@@ -357,13 +167,11 @@ export function ExamDataTable() {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
