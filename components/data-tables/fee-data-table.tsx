@@ -38,10 +38,11 @@ export type Fee = {
     | "examination"
     | "transportation"
     | "other"
+    | "unknown"
   amount: number
   amountPaid: number
   balance: number
-  status: "paid" | "partial" | "unpaid"
+  status: "paid" | "partial" | "unpaid" | "unknown"
   dueDate: string
   lastPaymentDate?: string
 }
@@ -59,17 +60,21 @@ export function FeeDataTable() {
       const json = await res.json()
 
       const mapped = json.map((fee: any): Fee => ({
-        id: fee._id,
-        studentId: fee.studentId._id,
-        studentName: fee.studentId.name,
-        financeType: fee.financeType,
-        amount: fee.amount,
-        amountPaid: fee.amountPaid,
-        balance: fee.balance,
-        status: fee.status,
-        dueDate: fee.date,
-        lastPaymentDate: fee.updatedAt,
+        id: fee?._id ?? "unknown",
+        studentId: fee?.studentId?._id ?? "unknown",
+        studentName: fee?.studentId?.name ?? "Unknown",
+        financeType: fee?.financeType ?? "unknown",
+        amount: typeof fee?.amount === "number" ? fee.amount : 0,
+        amountPaid: typeof fee?.amountPaid === "number" ? fee.amountPaid : 0,
+        balance: typeof fee?.balance === "number" ? fee.balance : 0,
+        status:
+          fee?.status === "paid" || fee?.status === "partial" || fee?.status === "unpaid"
+            ? fee.status
+            : "unknown",
+        dueDate: fee?.date ?? new Date().toISOString(),
+        lastPaymentDate: fee?.updatedAt ?? undefined,
       }))
+
       setData(mapped)
     } catch (err) {
       console.error("Failed to fetch fees:", err)
@@ -91,7 +96,7 @@ export function FeeDataTable() {
       accessorKey: "financeType",
       header: "Finance Type",
       cell: ({ row }) => (
-        <span className="capitalize">{row.getValue("financeType")}</span>
+        <span className="capitalize">{row.getValue("financeType") || "Unknown"}</span>
       ),
     },
     {
@@ -101,7 +106,7 @@ export function FeeDataTable() {
         new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
-        }).format(row.getValue("amount")),
+        }).format(row.getValue("amount") ?? 0),
     },
     {
       accessorKey: "amountPaid",
@@ -110,7 +115,7 @@ export function FeeDataTable() {
         new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
-        }).format(row.getValue("amountPaid")),
+        }).format(row.getValue("amountPaid") ?? 0),
     },
     {
       accessorKey: "balance",
@@ -119,25 +124,25 @@ export function FeeDataTable() {
         new Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
-        }).format(row.getValue("balance")),
+        }).format(row.getValue("balance") ?? 0),
     },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
         const status = row.getValue("status") as string
+        const variant =
+          status === "paid"
+            ? "success"
+            : status === "partial"
+            ? "default"
+            : status === "unpaid"
+            ? "destructive"
+            : "outline"
+
         return (
-          <Badge
-            variant={
-              status === "paid"
-                ? "success"
-                : status === "partial"
-                ? "default"
-                : "destructive"
-            }
-            className="capitalize"
-          >
-            {status}
+          <Badge variant={variant} className="capitalize">
+            {status || "Unknown"}
           </Badge>
         )
       },
@@ -153,7 +158,7 @@ export function FeeDataTable() {
 
         return (
           <div className={isPastDue ? "text-destructive font-medium" : ""}>
-            {format(new Date(dueDate), "PPP")}
+            {dueDate ? format(new Date(dueDate), "PPP") : "Unknown"}
             {isPastDue && <span className="ml-2">(Overdue)</span>}
           </div>
         )

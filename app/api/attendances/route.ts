@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/db"
 import { Attendance } from "@/lib/models/attendance"
 import "@/lib/models/student" // 👈 make sure it's registered
+import "@/lib/models/course"
+import "@/lib/models/class"
 import mongoose from "mongoose"
 
 // GET all attendance records
@@ -11,6 +13,8 @@ export async function GET() {
 
     const records = await Attendance.find()
       .populate("studentId", "name studentId")
+      .populate("classId", "semester type")
+      .populate("courseId", "courseName")
       .sort({ createdAt: -1 })
 
     return NextResponse.json(records, { status: 200 })
