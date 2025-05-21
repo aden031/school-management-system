@@ -24,7 +24,7 @@ export type Exam = {
   studentId: string
   studentName: string
   examTypeId: string
-  examTypeName: "midterm" | "final" | "quiz"
+  examTypeName: "midterm" | "final" | "quiz" | "unknown"
   courseId: string
   courseName: string
   marksObtained: number
@@ -45,16 +45,16 @@ export function ExamDataTable() {
       const raw = await res.json()
 
       const formatted: Exam[] = raw.map((item: any) => ({
-        id: item._id,
-        studentId: item.studentId._id,
-        studentName: item.studentId.name,
-        examTypeId: item.examTypeId._id,
-        examTypeName: item.examTypeId.name,
-        courseId: item.courseId._id,
-        courseName: item.courseId.courseName,
-        marksObtained: item.marksObtained,
-        totalMarks: item.examTypeId.marks,
-        date: item.date,
+        id: item?._id ?? "unknown",
+        studentId: item?.studentId?._id ?? "unknown",
+        studentName: item?.studentId?.name ?? "Unknown",
+        examTypeId: item?.examTypeId?._id ?? "unknown",
+        examTypeName: item?.examTypeId?.name ?? "unknown",
+        courseId: item?.courseId?._id ?? "unknown",
+        courseName: item?.courseId?.courseName ?? "Unknown",
+        marksObtained: typeof item?.marksObtained === "number" ? item.marksObtained : 0,
+        totalMarks: typeof item?.examTypeId?.marks === "number" ? item.examTypeId.marks : 100,
+        date: item?.date ?? new Date().toISOString(),
       }))
 
       setData(formatted)
@@ -83,11 +83,17 @@ export function ExamDataTable() {
       header: "Exam Type",
       cell: ({ row }) => {
         const examType = row.getValue("examTypeName") as string
+        const badgeVariant =
+          examType === "midterm"
+            ? "default"
+            : examType === "final"
+            ? "destructive"
+            : examType === "quiz"
+            ? "outline"
+            : "outline"
+
         return (
-          <Badge
-            variant={examType === "midterm" ? "default" : examType === "final" ? "destructive" : "outline"}
-            className="capitalize"
-          >
+          <Badge variant={badgeVariant} className="capitalize">
             {examType}
           </Badge>
         )
@@ -98,8 +104,8 @@ export function ExamDataTable() {
       header: "Marks Obtained",
       cell: ({ row }) => {
         const marksObtained = row.getValue("marksObtained") as number
-        const totalMarks = row.original.totalMarks
-        const percentage = Math.round((marksObtained / totalMarks) * 100)
+        const totalMarks = row.original.totalMarks || 100
+        const percentage = totalMarks ? Math.round((marksObtained / totalMarks) * 100) : 0
 
         let badgeVariant: "default" | "destructive" | "outline" | "success" = "outline"
         if (percentage >= 80) badgeVariant = "success"
@@ -121,7 +127,8 @@ export function ExamDataTable() {
       header: "Date",
       cell: ({ row }) => {
         const date = row.getValue("date") as string
-        return format(new Date(date), "PPP")
+        const parsedDate = new Date(date)
+        return isNaN(parsedDate.getTime()) ? "Unknown Date" : format(parsedDate, "PPP")
       },
     },
     {

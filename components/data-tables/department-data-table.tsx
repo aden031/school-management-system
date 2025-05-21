@@ -20,15 +20,15 @@ import axios from "axios"
 
 export type Department = {
   _id: string
-  facultyId: {
-    _id: string
-    name: string
+  facultyId?: {
+    _id?: string
+    name?: string
   }
-  name: string
-  studentCount: number
-  departmentMode: string
-  createdAt: string
-  updatedAt: string
+  name?: string
+  studentCount?: number
+  departmentMode?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 const fetchDepartments = async () => {
@@ -69,20 +69,20 @@ export function DepartmentDataTable() {
       cell: ({ row }) => row.index + 1,
     },
     {
-      accessorKey: "facultyId.name",
       header: "Faculty",
+      cell: ({ row }) => row.original?.facultyId?.name ?? "Unknown",
     },
     {
-      accessorKey: "name",
       header: "Department Name",
+      cell: ({ row }) => row.original?.name ?? "Unknown",
     },
     {
-      accessorKey: "studentCount",
       header: "Student Count",
+      cell: ({ row }) => row.original?.studentCount ?? "Unknown",
     },
     {
-      accessorKey: "departmentMode",
       header: "Department Mode",
+      cell: ({ row }) => row.original?.departmentMode ?? "Unknown",
     },
     {
       id: "actions",

@@ -157,7 +157,7 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
             <SelectContent>
               {classes.map((cls) => (
                 <SelectItem key={cls._id} value={cls._id}>
-                  {cls.type} ({cls.classMode})
+                  CMS-{cls.semester}-{cls.type} 
                 </SelectItem>
               ))}
             </SelectContent>

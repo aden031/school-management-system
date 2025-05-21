@@ -42,25 +42,25 @@ export function CoursesDataTable() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const fetchCourses = async () => {
-    setLoading(true)
     try {
+      setLoading(true)
       const res = await fetch("/api/courses")
-      const rawData = await res.json()
+      const resData = await res.json()
 
-      const formattedData: Course[] = rawData.map((course: any) => ({
+      const formatted: Course[] = resData.map((course: any) => ({
         id: course._id,
-        departmentId: course.departmentId._id,
-        departmentName: course.departmentId.name,
+        departmentId: course.departmentId?._id,
+        departmentName: course.departmentId?.name,
         courseName: course.courseName,
         code: course.code,
         semester: course.semester,
-        facultyId: course.facultyId._id,
-        facultyName: course.facultyId.name,
+        facultyId: course.facultyId?._id,
+        facultyName: course.facultyId?.name,
       }))
 
-      setData(formattedData)
+      setData(formatted)
     } catch (err) {
-      console.error("Failed to fetch courses", err)
+      console.error("Failed to fetch courses:", err)
     } finally {
       setLoading(false)
     }
@@ -93,16 +93,13 @@ export function CoursesDataTable() {
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    state: { sorting, columnFilters },
     onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-      columnFilters,
-    },
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   })
 
   return (
@@ -111,7 +108,7 @@ export function CoursesDataTable() {
         <Input
           placeholder="Filter courses..."
           value={(table.getColumn("courseName")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("courseName")?.setFilterValue(event.target.value)}
+          onChange={(e) => table.getColumn("courseName")?.setFilterValue(e.target.value)}
           className="max-w-sm"
         />
         <CoursesDialog mode="add" onSuccess={fetchCourses} />
@@ -124,9 +121,7 @@ export function CoursesDataTable() {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -141,7 +136,7 @@ export function CoursesDataTable() {
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -160,7 +155,7 @@ export function CoursesDataTable() {
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <div className="flex justify-end gap-2 py-4">
         <Button
           variant="outline"
           size="sm"
