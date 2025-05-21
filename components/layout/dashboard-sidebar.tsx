@@ -16,6 +16,9 @@ import {
   Settings,
   Users,
   X,
+  Paperclip,
+  BookCheck,
+  Coins,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -134,6 +137,16 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               {(open || isMobileOpen) && <span>Students</span>}
             </Link>
             <Link
+              href="/attendances"
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                !open && "md:justify-center md:px-0",
+              )}
+            >
+              <BookCheck className="h-4 w-4" />
+              {(open || isMobileOpen) && <span>Attendaces</span>}
+            </Link>
+            <Link
               href="/courses"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
@@ -144,7 +157,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               {(open || isMobileOpen) && <span>Courses</span>}
             </Link>
             <Link
-              href="exams"
+              href="/exams"
               className={cn(
               "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
               !open && "md:justify-center md:px-0",
@@ -152,6 +165,16 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
             >
               <GraduationCap className="h-4 w-4" />
               {(open || isMobileOpen) && <span>Exams</span>}
+            </Link>
+            <Link
+              href="/finances"
+              className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+              !open && "md:justify-center md:px-0",
+              )}
+            >
+              <Coins className="h-4 w-4" />
+              {(open || isMobileOpen) && <span>Finances</span>}
             </Link>
             {(open || isMobileOpen) && (
               <div className="mt-2 px-3 text-xs font-semibold text-muted-foreground">Administration</div>

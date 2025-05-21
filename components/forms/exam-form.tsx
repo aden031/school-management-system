@@ -101,20 +101,14 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
-
-    if (res.ok) {
-      setOpen(false)
-      onDone?.()
-    }
+    onDone?.()
   }
 
   const onDelete = async () => {
     if (!exam?.id) return
     const res = await fetch(`/api/exams/${exam.id}`, { method: "DELETE" })
-    if (res.ok) {
       setOpen(false)
       onDone?.()
-    }
   }
 
   return (
