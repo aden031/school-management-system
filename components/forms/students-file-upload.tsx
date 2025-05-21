@@ -170,6 +170,7 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
               accept=".xlsx,.xls,.csv"
               onChange={handleFileChange}
               disabled={uploading}
+              className="border-blue-400 cursor-pointer hover:border-blue-700"
             />
             {file && <p className="text-xs text-muted-foreground">Selected: {file.name}</p>}
 
