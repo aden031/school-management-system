@@ -5,7 +5,6 @@ export interface IAttendance extends Document {
   studentId: mongoose.Types.ObjectId | IStudent
   classId: mongoose.Types.ObjectId
   courseId: mongoose.Types.ObjectId
-  userId: mongoose.Types.ObjectId
   date: Date
   isPresent: boolean
 }
@@ -27,14 +26,8 @@ const AttendanceSchema: Schema<IAttendance> = new Schema(
       ref: "Course",
       required: true,
     },
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
     date: {
-      type: Date,
-      required: true,
+      type: Date  
     },
     isPresent: {
       type: Boolean,
