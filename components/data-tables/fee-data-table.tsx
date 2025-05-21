@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -19,7 +19,6 @@ import { FeeDialog } from "@/components/forms/fee-form"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 
-// Define the Fee type
 export type Fee = {
   id: string
   studentId: string
@@ -33,93 +32,6 @@ export type Fee = {
   lastPaymentDate?: string
 }
 
-// Sample data
-const data: Fee[] = [
-  {
-    id: "1",
-    studentId: "1",
-    studentName: "John Doe",
-    financeType: "admission",
-    amount: 5000,
-    amountPaid: 5000,
-    balance: 0,
-    status: "paid",
-    dueDate: "2023-08-15",
-    lastPaymentDate: "2023-08-10",
-  },
-  {
-    id: "2",
-    studentId: "2",
-    studentName: "Jane Smith",
-    financeType: "tuition",
-    amount: 12000,
-    amountPaid: 6000,
-    balance: 6000,
-    status: "partial",
-    dueDate: "2023-09-30",
-    lastPaymentDate: "2023-09-15",
-  },
-  {
-    id: "3",
-    studentId: "3",
-    studentName: "Bob Johnson",
-    financeType: "registration",
-    amount: 2500,
-    amountPaid: 0,
-    balance: 2500,
-    status: "unpaid",
-    dueDate: "2023-08-20",
-  },
-  {
-    id: "4",
-    studentId: "4",
-    studentName: "Alice Brown",
-    financeType: "library",
-    amount: 1000,
-    amountPaid: 1000,
-    balance: 0,
-    status: "paid",
-    dueDate: "2023-09-10",
-    lastPaymentDate: "2023-09-05",
-  },
-  {
-    id: "5",
-    studentId: "5",
-    studentName: "Charlie Wilson",
-    financeType: "examination",
-    amount: 3000,
-    amountPaid: 1500,
-    balance: 1500,
-    status: "partial",
-    dueDate: "2023-10-15",
-    lastPaymentDate: "2023-09-20",
-  },
-  {
-    id: "6",
-    studentId: "1",
-    studentName: "John Doe",
-    financeType: "transportation",
-    amount: 4000,
-    amountPaid: 2000,
-    balance: 2000,
-    status: "partial",
-    dueDate: "2023-10-30",
-    lastPaymentDate: "2023-10-10",
-  },
-  {
-    id: "7",
-    studentId: "2",
-    studentName: "Jane Smith",
-    financeType: "other",
-    amount: 1500,
-    amountPaid: 0,
-    balance: 1500,
-    status: "unpaid",
-    dueDate: "2023-11-15",
-  },
-]
-
-// Define columns
 const columns: ColumnDef<Fee>[] = [
   {
     accessorKey: "studentName",
@@ -128,46 +40,34 @@ const columns: ColumnDef<Fee>[] = [
   {
     accessorKey: "financeType",
     header: "Finance Type",
-    cell: ({ row }) => {
-      const financeType = row.getValue("financeType") as string
-      return <span className="capitalize">{financeType}</span>
-    },
+    cell: ({ row }) => <span className="capitalize">{row.getValue("financeType")}</span>,
   },
   {
     accessorKey: "amount",
     header: "Amount",
-    cell: ({ row }) => {
-      const amount = Number.parseFloat(row.getValue("amount"))
-      const formatted = new Intl.NumberFormat("en-US", {
+    cell: ({ row }) =>
+      new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amount)
-      return formatted
-    },
+      }).format(row.getValue("amount")),
   },
   {
     accessorKey: "amountPaid",
     header: "Amount Paid",
-    cell: ({ row }) => {
-      const amountPaid = Number.parseFloat(row.getValue("amountPaid"))
-      const formatted = new Intl.NumberFormat("en-US", {
+    cell: ({ row }) =>
+      new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amountPaid)
-      return formatted
-    },
+      }).format(row.getValue("amountPaid")),
   },
   {
     accessorKey: "balance",
     header: "Balance",
-    cell: ({ row }) => {
-      const balance = Number.parseFloat(row.getValue("balance"))
-      const formatted = new Intl.NumberFormat("en-US", {
+    cell: ({ row }) =>
+      new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(balance)
-      return formatted
-    },
+      }).format(row.getValue("balance")),
   },
   {
     accessorKey: "status",
@@ -194,7 +94,7 @@ const columns: ColumnDef<Fee>[] = [
       const isPastDue = due < today && row.original.status !== "paid"
 
       return (
-        <div className={`${isPastDue ? "text-destructive font-medium" : ""}`}>
+        <div className={isPastDue ? "text-destructive font-medium" : ""}>
           {format(new Date(dueDate), "PPP")}
           {isPastDue && <span className="ml-2">(Overdue)</span>}
         </div>
@@ -205,11 +105,10 @@ const columns: ColumnDef<Fee>[] = [
     id: "actions",
     cell: ({ row }) => {
       const fee = row.original
-
       return (
         <div className="flex items-center gap-2">
-          <FeeDialog mode="edit" fee={fee} />
-          <FeeDialog mode="delete" fee={fee} />
+          <FeeDialog mode="edit" fee={fee} onDone={fetchData} />
+          <FeeDialog mode="delete" fee={fee} onDone={fetchData} />
         </div>
       )
     },
@@ -217,8 +116,36 @@ const columns: ColumnDef<Fee>[] = [
 ]
 
 export function FeeDataTable() {
+  const [data, setData] = useState<Fee[]>([])
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+      const fetchData = async () => {
+      try {
+        const res = await fetch("/api/fees")
+        const json = await res.json()
+        const mapped = json.map((fee: any): Fee => ({
+          id: fee._id,
+          studentId: fee.studentId._id,
+          studentName: fee.studentId.name,
+          financeType: fee.financeType,
+          amount: fee.amount,
+          amountPaid: fee.amountPaid,
+          balance: fee.balance,
+          status: fee.status,
+          dueDate: fee.date,
+          lastPaymentDate: fee.updatedAt,
+        }))
+        setData(mapped)
+      } catch (err) {
+        console.error("Failed to fetch fees:", err)
+      }
+    }
+  useEffect(() => {
+
+
+    fetchData()
+  }, [])
 
   const table = useReactTable({
     data,
@@ -255,7 +182,7 @@ export function FeeDataTable() {
             <option value="partial">Partial</option>
             <option value="unpaid">Unpaid</option>
           </select>
-          <FeeDialog mode="add" />
+          <FeeDialog mode="add" onDone={fetchData}/>
         </div>
       </div>
 
@@ -264,13 +191,11 @@ export function FeeDataTable() {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>

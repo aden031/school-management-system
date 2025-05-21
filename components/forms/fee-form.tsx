@@ -26,41 +26,33 @@ import type { Fee } from "@/components/data-tables/fee-data-table"
 import { Edit, PlusCircle, Trash2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
-import { students } from "@/data"
 
-// Define the form schema
 const formSchema = z.object({
-  studentId: z.string({
-    required_error: "Please select a student.",
-  }),
-  financeType: z.enum(["admission", "registration", "tuition", "library", "examination", "transportation", "other"], {
-    required_error: "Please select a finance type.",
-  }),
-  amount: z.coerce.number().min(0, {
-    message: "Amount must be at least 0.",
-  }),
-  amountPaid: z.coerce.number().min(0, {
-    message: "Amount paid must be at least 0.",
-  }),
-  dueDate: z.date({
-    required_error: "Please select a due date.",
-  }),
+  studentId: z.string({ required_error: "Please select a student." }),
+  financeType: z.enum(
+    ["admission", "registration", "tuition", "library", "examination", "transportation", "other"],
+    { required_error: "Please select a finance type." }
+  ),
+  amount: z.coerce.number().min(0, { message: "Amount must be at least 0." }),
+  amountPaid: z.coerce.number().min(0, { message: "Amount paid must be at least 0." }),
+  dueDate: z.date({ required_error: "Please select a due date." }),
   lastPaymentDate: z.date().optional(),
 })
 
 type FeeFormValues = z.infer<typeof formSchema>
-
 interface FeeDialogProps {
   mode: "add" | "edit" | "delete"
   fee?: Fee
+  onDone:()=> void
 }
 
-export function FeeDialog({ mode, fee }: FeeDialogProps) {
+export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
   const [open, setOpen] = useState(false)
+  const [students, setStudents] = useState<{ _id: string; name: string }[]>([])
   const [balance, setBalance] = useState<number>(fee?.balance || 0)
   const [status, setStatus] = useState<"paid" | "partial" | "unpaid">(fee?.status || "unpaid")
+  const [loading, setLoading] = useState(false)
 
-  // Default values for the form
   const defaultValues: Partial<FeeFormValues> = {
     studentId: fee?.studentId || "",
     financeType: fee?.financeType || "tuition",
@@ -70,22 +62,32 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
     lastPaymentDate: fee?.lastPaymentDate ? new Date(fee.lastPaymentDate) : undefined,
   }
 
-  // Initialize the form
   const form = useForm<FeeFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
   })
 
-  // Watch for amount and amountPaid changes to update balance and status
   const amount = form.watch("amount")
   const amountPaid = form.watch("amountPaid")
 
   useEffect(() => {
-    // Calculate balance
+    const fetchStudents = async () => {
+      try {
+        const res = await fetch("/api/student")
+        const data = await res.json()
+        setStudents(data)
+      } catch (error) {
+        console.error("Failed to fetch students:", error)
+      }
+    }
+
+    fetchStudents()
+  }, [])
+
+  useEffect(() => {
     const calculatedBalance = amount - amountPaid
     setBalance(calculatedBalance)
 
-    // Determine status
     if (calculatedBalance <= 0) {
       setStatus("paid")
     } else if (amountPaid > 0) {
@@ -95,25 +97,49 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
     }
   }, [amount, amountPaid])
 
-  // Form submission handler
-  function onSubmit(data: FeeFormValues) {
-    // Add calculated fields
-    const submissionData = {
+  async function onSubmit(data: FeeFormValues) {
+    const payload = {
       ...data,
       balance,
       status,
+      description: `${data.financeType} payment`, // You can make this editable later
+      date: data.dueDate,
     }
 
-    // In a real app, you would send this data to your backend
-    console.log(submissionData)
-    setOpen(false)
+    try {
+      setLoading(true)
+      const res = await fetch(
+        mode === "edit" ? `/api/fees/${fee?.id}` : "/api/fees/",
+        {
+          method: mode === "edit" ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      )
+
+      onDone?.()
+      if (!res.ok) throw new Error("Failed to submit")
+
+      setOpen(false)
+    } catch (err) {
+      console.error("Submission error:", err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Delete handler
-  function onDelete() {
-    // In a real app, you would send a delete request to your backend
-    console.log("Deleting fee:", fee?.id)
-    setOpen(false)
+  async function onDelete() {
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/fees/${fee?.id}`, { method: "DELETE" })
+      onDone?.()
+      if (!res.ok) throw new Error("Failed to delete")
+      setOpen(false)
+    } catch (err) {
+      console.error("Deletion error:", err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -134,15 +160,16 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
           </Button>
         )}
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{mode === "add" ? "Add Fee" : mode === "edit" ? "Edit Fee" : "Delete Fee"}</DialogTitle>
           <DialogDescription>
             {mode === "add"
-              ? "Add a new fee record to the system."
+              ? "Add a new fee record."
               : mode === "edit"
-                ? "Make changes to the fee record."
-                : "Are you sure you want to delete this fee record?"}
+                ? "Update the fee record."
+                : "Are you sure you want to delete this fee?"}
           </DialogDescription>
         </DialogHeader>
 
@@ -151,22 +178,21 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Warning</AlertTitle>
-              <AlertDescription>
-                This action cannot be undone. This will permanently delete the fee record.
-              </AlertDescription>
+              <AlertDescription>This action cannot be undone.</AlertDescription>
             </Alert>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={onDelete}>
-                Delete
+              <Button variant="destructive" onClick={onDelete} disabled={loading}>
+                {loading ? "Deleting..." : "Delete"}
               </Button>
             </DialogFooter>
           </>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Dynamic student selector */}
               <FormField
                 control={form.control}
                 name="studentId"
@@ -181,8 +207,8 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
                       </FormControl>
                       <SelectContent>
                         {students.map((student) => (
-                          <SelectItem key={student.id} value={student.id}>
-                            {student.name} ({student.studentId})
+                          <SelectItem key={student._id} value={student._id}>
+                            {student.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -192,6 +218,7 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
                 )}
               />
 
+              {/* Finance type */}
               <FormField
                 control={form.control}
                 name="financeType"
@@ -219,7 +246,8 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Amount and Paid */}
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="amount"
@@ -227,13 +255,12 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
                     <FormItem>
                       <FormLabel>Total Amount</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="Enter total amount" {...field} min={0} step="0.01" />
+                        <Input type="number" {...field} min={0} step="0.01" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="amountPaid"
@@ -241,7 +268,7 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
                     <FormItem>
                       <FormLabel>Amount Paid</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="Enter amount paid" {...field} min={0} step="0.01" />
+                        <Input type="number" {...field} min={0} step="0.01" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -249,29 +276,26 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Balance and Status */}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium mb-2">Balance</div>
-                  <div className="h-10 px-3 py-2 rounded-md border border-input bg-background flex items-center">
-                    <span className={balance === 0 ? "text-green-600" : balance > 0 ? "text-red-600" : "text-blue-600"}>
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                      }).format(balance)}
+                  <div className="h-10 px-3 py-2 border rounded-md flex items-center">
+                    <span className={balance <= 0 ? "text-green-600" : "text-red-600"}>
+                      ${balance.toFixed(2)}
                     </span>
                   </div>
                 </div>
-
                 <div>
                   <div className="text-sm font-medium mb-2">Status</div>
-                  <div className="h-10 px-3 py-2 rounded-md border border-input bg-background flex items-center">
+                  <div className="h-10 px-3 py-2 border rounded-md flex items-center">
                     <span
                       className={
                         status === "paid"
-                          ? "text-green-600 font-medium"
+                          ? "text-green-600"
                           : status === "partial"
-                            ? "text-blue-600 font-medium"
-                            : "text-red-600 font-medium"
+                            ? "text-blue-600"
+                            : "text-red-600"
                       }
                     >
                       {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -280,70 +304,40 @@ export function FeeDialog({ mode, fee }: FeeDialogProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="dueDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Due Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                            >
-                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="lastPaymentDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Last Payment Date (Optional)</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
-                              )}
-                            >
-                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Due Date and Last Payment Date */}
+              <div className="grid grid-cols-2 gap-4">
+                {["dueDate", "lastPaymentDate"].map((name) => (
+                  <FormField
+                    key={name}
+                    control={form.control}
+                    name={name as "dueDate" | "lastPaymentDate"}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>{name === "dueDate" ? "Due Date" : "Last Payment Date (Optional)"}</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button variant="outline" className={cn("w-full text-left", !field.value && "text-muted-foreground")}>
+                                {field.value ? format(field.value, "PPP") : "Pick a date"}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
               </div>
 
               <DialogFooter>
-                <Button type="submit">{mode === "add" ? "Add" : "Save changes"}</Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Saving..." : mode === "add" ? "Add" : "Save changes"}
+                </Button>
               </DialogFooter>
             </form>
           </Form>
