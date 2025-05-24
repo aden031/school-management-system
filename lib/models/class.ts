@@ -15,8 +15,7 @@ const ClassSchema: Schema = new Schema(
   {
     facultyId: {
       type: Schema.Types.ObjectId,
-      ref: "Faculty",
-      required: [true, "Faculty ID is required"],
+      ref: "Faculty"
     },
     departmentId: {
       type: Schema.Types.ObjectId,

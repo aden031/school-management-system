@@ -21,8 +21,6 @@ import { Badge } from "@/components/ui/badge"
 
 export type Classes = {
   id: string
-  facultyId: string
-  facultyName: string
   departmentId: string
   departmentName: string
   semesterName: number
@@ -43,8 +41,6 @@ export function ClassesDataTable() {
       const res = await axios.get("/api/classes")
       const classesData: Classes[] = res.data.map((item: any) => ({
         id: item._id,
-        facultyId: item.facultyId?._id ?? "",
-        facultyName: item.facultyId?.name ?? "N/A",
         departmentId: item.departmentId?._id ?? "",
         departmentName: item.departmentId?.name ?? "N/A",
         semesterName: item.semester,
@@ -69,10 +65,6 @@ export function ClassesDataTable() {
       id: "index",
       header: "ID",
       cell: ({ row }) => row.index + 1,
-    },
-    {
-      accessorKey: "facultyName",
-      header: "Faculty",
     },
     {
       accessorKey: "departmentName",

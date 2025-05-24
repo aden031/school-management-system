@@ -13,7 +13,6 @@ export async function GET() {
   try {
     await connectDB()
     const classes = await Class.find({})
-      .populate("facultyId", "name")
       .populate("departmentId", "name")
       .sort({ createdAt: -1 })
 
@@ -34,25 +33,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate request body
-    if (!body.facultyId || !body.departmentId || !body.semester || !body.classMode || !body.type) {
+    if (!body.departmentId || !body.semester || !body.classMode || !body.type) {
       return NextResponse.json(
         {
-          error: "Faculty ID, department ID, semester, class mode, and type are required",
+          error: "department ID, semester, class mode, and type are required",
         },
         { status: 400 },
       )
     }
 
     // Validate IDs
-    if (!mongoose.Types.ObjectId.isValid(body.facultyId) || !mongoose.Types.ObjectId.isValid(body.departmentId)) {
+    if (!mongoose.Types.ObjectId.isValid(body.departmentId)) {
       return NextResponse.json({ error: "Invalid faculty or department ID" }, { status: 400 })
     }
 
-    // Check if faculty exists
-    const faculty = await Faculty.findById(body.facultyId)
-    if (!faculty) {
-      return NextResponse.json({ error: "Faculty not found" }, { status: 404 })
-    }
 
     // Check if department exists
     const department = await Department.findById(body.departmentId)
@@ -62,7 +56,6 @@ export async function POST(request: NextRequest) {
 
     // Create new class
     const newClass = await Class.create({
-      facultyId: body.facultyId,
       departmentId: body.departmentId,
       semester: body.semester,
       classMode: body.classMode,
@@ -72,7 +65,6 @@ export async function POST(request: NextRequest) {
 
     // Populate faculty and department information
     await newClass.populate([
-      { path: "facultyId", select: "name" },
       { path: "departmentId", select: "name" },
     ])
 

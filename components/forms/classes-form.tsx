@@ -34,11 +34,10 @@ import { Edit, PlusCircle, Trash2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const formSchema = z.object({
-  facultyId: z.string().min(1, { message: "Please select a faculty." }),
   departmentId: z.string().min(1, { message: "Please select a department." }),
   semester: z.coerce.number().min(1).max(8),
   classMode: z.enum(["full time", "part time"]),
-  type: z.string().min(1, { message: "Type is required." }), // 🔥 changed here
+  type: z.string().min(1, { message: "Type is required." }),
   status: z.enum(["active", "inactive"]),
 })
 
@@ -46,7 +45,6 @@ type ClassesFormValues = z.infer<typeof formSchema>
 
 interface Classes {
   id?: string
-  facultyId: string
   departmentId: string
   semester: number
   classMode: "full time" | "part time"
@@ -62,13 +60,11 @@ interface ClassesDialogProps {
 
 export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
   const [open, setOpen] = useState(false)
-  const [faculties, setFaculties] = useState<{ _id: string; name: string }[]>([])
   const [departments, setDepartments] = useState<{ _id: string; name: string }[]>([])
 
   const form = useForm<ClassesFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      facultyId: "",
       departmentId: "",
       semester: 1,
       classMode: "full time",
@@ -78,10 +74,6 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
   })
 
   useEffect(() => {
-    fetch("/api/faculty")
-      .then(res => res.json())
-      .then(data => setFaculties(data))
-
     fetch("/api/department")
       .then(res => res.json())
       .then(data => setDepartments(data))
@@ -91,7 +83,6 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
   useEffect(() => {
     if (mode === "edit" && classes) {
       form.reset({
-        facultyId: classes.facultyId,
         departmentId: classes.departmentId,
         semester: classes.semester,
         classMode: classes.classMode,
@@ -182,31 +173,6 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="facultyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Faculty</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a faculty" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {faculties.map((f) => (
-                          <SelectItem key={f._id} value={f._id}>
-                            {f.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="departmentId"
                 render={({ field }) => (
                   <FormItem>
@@ -266,7 +232,6 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
                 )}
               />
 
-              {/* 🔥 type is now a regular input field */}
               <FormField
                 control={form.control}
                 name="type"
