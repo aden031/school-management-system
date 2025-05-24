@@ -16,11 +16,10 @@ export async function POST(req: NextRequest) {
         phone,
         studentId,
         status,
-        facultyId,
         classId,
       } = student
 
-      if (!name || !parentPhone || !studentId ||  !facultyId || !classId) {
+      if (!name || !parentPhone || !studentId ||  !classId) {
         throw new Error("Missing required fields in one or more students")
       }
 
@@ -31,7 +30,6 @@ export async function POST(req: NextRequest) {
       phone,
       studentId,
       status: typeof status === "string" ? status.toLowerCase() : "active",
-      facultyId,
       classId,
     }
     })

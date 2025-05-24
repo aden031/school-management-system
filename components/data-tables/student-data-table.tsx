@@ -22,7 +22,6 @@ import {StudentFileUpload } from "../forms/students-file-upload"
 
 export type Student = {
   id: string
-  facultyName: string
   className: string
   name: string
   parentPhone: string
@@ -43,7 +42,6 @@ export function StudentDataTable() {
         const response = await axios.get("/api/student");
         const data = (response.data || []).map((student: any) => ({
           id: student?._id ?? "N/A",
-          facultyName: student?.facultyId?.name ?? "Unknown Faculty",
           className: student?.classId?.departmentId?.name && student?.classId?.semester
             ? `${student.classId.departmentId.name} - Semester ${student.classId.semester}`
             : "Unknown Class",
@@ -73,10 +71,6 @@ export function StudentDataTable() {
     {
       accessorKey: "name",
       header: "Name",
-    },
-    {
-      accessorKey: "facultyName",
-      header: "Faculty",
     },
     {
       accessorKey: "className",

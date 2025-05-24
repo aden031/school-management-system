@@ -26,16 +26,10 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [success, setSuccess] = useState(false)
-  const [faculties, setFaculties] = useState<any[]>([])
   const [classes, setClasses] = useState<any[]>([])
-  const [selectedFaculty, setSelectedFaculty] = useState<string>("")
   const [selectedClass, setSelectedClass] = useState<string>("")
 
   useEffect(() => {
-    fetch("/api/faculty")
-      .then((res) => res.json())
-      .then(setFaculties)
-
     fetch("/api/classes")
       .then((res) => res.json())
       .then(setClasses)
@@ -71,8 +65,8 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
   }
 
   const handleUpload = async () => {
-    if (!file || !selectedFaculty || !selectedClass) {
-      setError("Please select faculty, class, and upload a file.")
+    if (!file  || !selectedClass) {
+      setError("Please select  class, and upload a file.")
       return
     }
 
@@ -89,7 +83,6 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
 
       const students = json.map((student: any) => ({
         ...student,
-        facultyId: selectedFaculty,
         classId: selectedClass,
       }))
       const res = await fetch("/api/student/upload", {
@@ -134,21 +127,11 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
         <DialogHeader>
           <DialogTitle>Upload Student Data</DialogTitle>
           <DialogDescription>
-            Select faculty and class, then upload Excel or CSV file with student data.
+            Select   class then upload Excel or CSV file with student data.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <Select onValueChange={setSelectedFaculty}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Faculty" />
-            </SelectTrigger>
-            <SelectContent>
-              {faculties.map((fac) => (
-                <SelectItem key={fac._id} value={fac._id}>{fac.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
           <Select onValueChange={setSelectedClass}>
             <SelectTrigger>
