@@ -144,19 +144,19 @@ export function AttendanceDataTable() {
 
   const transformedAttendances = useMemo(() => {
     return attendances.map(att => {
-      const classObj = classes.find(c => c._id === att.classId._id)
+      const classObj = classes.find(c => c._id === att.classId?._id)
       return {
-        id: att._id,
-        studentId: att.studentId._id,
-        studentName: att.studentId.name,
-        classId: att.classId._id,
-        className: classObj 
-          ? `${classObj.departmentId.name} - Semester ${classObj.semester}` 
-          : 'Unknown Class',
-        courseId: att.courseId._id,
-        courseName: att.courseId.courseName,
-        date: att.date,
-        isPresent: att.isPresent,
+      id: att._id ?? "",
+      studentId: att.studentId?._id ?? "",
+      studentName: att.studentId?.name ?? "Unknown Student",
+      classId: att.classId?._id ?? "",
+      className: classObj
+        ? `${classObj.departmentId.name} - Semester ${classObj.semester}`
+        : "Unknown Class",
+      courseId: att.courseId?._id ?? "",
+      courseName: att.courseId?.courseName ?? "Unknown Course",
+      date: att.date ?? "",
+      isPresent: typeof att.isPresent === "boolean" ? att.isPresent : false,
       }
     })
   }, [attendances, classes])

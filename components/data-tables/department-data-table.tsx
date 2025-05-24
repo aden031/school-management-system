@@ -20,10 +20,6 @@ import axios from "axios"
 
 export type Department = {
   _id: string
-  facultyId?: {
-    _id?: string
-    name?: string
-  }
   name?: string
   studentCount?: number
   departmentMode?: string
@@ -67,10 +63,6 @@ export function DepartmentDataTable() {
       id: "index",
       header: "ID",
       cell: ({ row }) => row.index + 1,
-    },
-    {
-      header: "Faculty",
-      cell: ({ row }) => row.original?.facultyId?.name ?? "Unknown",
     },
     {
       header: "Department Name",

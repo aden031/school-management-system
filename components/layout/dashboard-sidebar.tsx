@@ -97,16 +97,6 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               <div className="mt-2 px-3 text-xs font-semibold text-muted-foreground">Academic</div>
             )}
             <Link
-              href="/faculties"
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                !open && "md:justify-center md:px-0",
-              )}
-            >
-              <Building2 className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Faculties</span>}
-            </Link>
-            <Link
               href="/departments"
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
