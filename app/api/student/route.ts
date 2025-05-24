@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate request body
-    if (!body.name || !body.facultyId || !body.classId || !body.parentPhone || !body.studentId) {
+    if (!body.name  || !body.classId || !body.parentPhone || !body.studentId) {
       return NextResponse.json(
         {
           error: "Name, faculty ID, class ID, parent phone, and student ID are required",
@@ -51,15 +51,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate IDs
-    if (!mongoose.Types.ObjectId.isValid(body.facultyId) || !mongoose.Types.ObjectId.isValid(body.classId)) {
+    if (!mongoose.Types.ObjectId.isValid(body.classId)) {
       return NextResponse.json({ error: "Invalid faculty or class ID" }, { status: 400 })
     }
 
     // Check if faculty exists
-    const faculty = await Faculty.findById(body.facultyId)
-    if (!faculty) {
-      return NextResponse.json({ error: "Faculty not found" }, { status: 404 })
-    }
 
     // Check if class exists
     const classObj = await Class.findById(body.classId)
@@ -76,7 +72,6 @@ export async function POST(request: NextRequest) {
     // Create new student
     const student = await Student.create({
       name: body.name,
-      facultyId: body.facultyId,
       classId: body.classId,
       gender: body.gender,
       parentPhone: body.parentPhone,
@@ -88,7 +83,6 @@ export async function POST(request: NextRequest) {
 
     // Populate faculty and class information
     await student.populate([
-      { path: "facultyId", select: "name" },
       {
         path: "classId",
         select: "semester type classMode",

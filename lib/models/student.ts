@@ -3,7 +3,7 @@ import type { IFaculty } from "./faculty"
 import type { IClass } from "./class"
 
 export interface IStudent extends Document {
-  facultyId: mongoose.Types.ObjectId | IFaculty
+  facultyId?: mongoose.Types.ObjectId | IFaculty
   classId: mongoose.Types.ObjectId | IClass
   name: string
   gender?: string
@@ -18,8 +18,7 @@ const StudentSchema: Schema = new Schema(
   {
     facultyId: {
       type: Schema.Types.ObjectId,
-      ref: "Faculty",
-      required: [true, "Faculty ID is required"],
+      ref: "Faculty"
     },
     classId: {
       type: Schema.Types.ObjectId,

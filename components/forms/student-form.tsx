@@ -21,7 +21,6 @@ import { Edit, PlusCircle, Trash2 } from "lucide-react"
 const API_BASE = "/api/student"
 
 const formSchema = z.object({
-  facultyId: z.string().optional(),
   classId: z.string().optional(),
   name: z.string().min(2, "Name must be at least 2 characters.").optional(),
   parentPhone: z.string().min(10, "Phone must be at least 10 digits.").optional(),
@@ -33,7 +32,6 @@ type StudentFormValues = z.infer<typeof formSchema>
 
 interface Student {
   _id: string
-  facultyId: { _id: string; name: string } | string
   classId: { _id: string; semester?: number; type?: string } | string
   name: string
   parentPhone: string
@@ -49,21 +47,15 @@ interface StudentDialogProps {
 
 export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
   const [open, setOpen] = useState(false)
-  const [faculties, setFaculties] = useState<any[]>([])
   const [classes, setClasses] = useState<any[]>([])
 
   useEffect(() => {
-    axios.get("/api/faculty").then(res => setFaculties(res.data)).catch(console.error)
     axios.get("/api/classes").then(res => setClasses(res.data)).catch(console.error)
   }, [])
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      facultyId:
-        typeof student?.facultyId === "object" && student?.facultyId?._id
-          ? student.facultyId._id
-          : (student?.facultyId as string) || "",
       classId:
         typeof student?.classId === "object" && student?.classId?._id
           ? student.classId._id
@@ -174,29 +166,6 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
                     <FormControl>
                       <Input placeholder="Student Name" {...field} />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="facultyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Faculty</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Faculty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {faculties.map(faculty => (
-                          <SelectItem key={faculty._id} value={faculty._id}>
-                            {faculty.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
