@@ -22,7 +22,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import axios from "axios"
 
 const formSchema = z.object({
-  facultyId: z.string({ required_error: "Please select a faculty." }),
   name: z.string().min(2, { message: "Department name must be at least 2 characters." }),
   departmentMode: z.string({ required_error: "Please select a department mode." }),
 })
@@ -37,10 +36,8 @@ interface DepartmentDialogProps {
  
 export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogProps) {
   const [open, setOpen] = useState(false)
-  const [faculties, setFaculties] = useState<{ _id: string; name: string }[]>([])
 
   const defaultValues: Partial<DepartmentFormValues> = {
-    facultyId: department?._id || "",
     name: department?.name || "",
     departmentMode: department?.departmentMode || "",
   }
@@ -50,23 +47,9 @@ export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogP
     defaultValues,
   })
 
-  useEffect(() => {
-    const fetchFaculties = async () => {
-      try {
-        const res = await axios.get("/api/faculty")
-        setFaculties(res.data)
-      } catch (err) {
-        console.error("Error fetching faculties:", err)
-      }
-    }
-
-    if (open) fetchFaculties()
-  }, [open])
-
   const onSubmit = async (data: DepartmentFormValues) => {
     const payload = {
       name: data.name,
-      facultyId: data.facultyId,
       departmentMode: data.departmentMode,
     }
 
@@ -77,7 +60,6 @@ export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogP
         data: mode === "edit" ? { ...payload, _id: department?._id } : payload,
       })
 
-      // if (!res.status === 200) throw new Error("Failed to submit")
       setOpen(false)
       onDone?.()
     } catch (err) {
@@ -149,31 +131,6 @@ export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogP
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="facultyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Faculty</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a faculty" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {faculties.map((faculty) => (
-                          <SelectItem key={faculty._id} value={faculty._id}>
-                            {faculty.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="name"

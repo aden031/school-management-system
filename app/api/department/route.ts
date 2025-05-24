@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate request body
-    if (!body.name || !body.facultyId || !body.departmentMode) {
-      return NextResponse.json({ error: "Name, facultyId, and departmentMode are required" }, { status: 400 })
+    if (!body.name ||  !body.departmentMode) {
+      return NextResponse.json({ error: "Name and departmentMode are required" }, { status: 400 })
     }
 
 
@@ -41,8 +41,6 @@ export async function POST(request: NextRequest) {
       departmentMode: body.departmentMode,
     })
 
-    // Populate faculty information
-    await department.populate("facultyId", "name")
 
     return NextResponse.json(department, { status: 201 })
   } catch (error: any) {
