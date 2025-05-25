@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,11 +8,26 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Download, PrinterIcon as Print, Users, Calendar, FileText, DollarSign } from "lucide-react"
-import { classes, students, attendanceData, examData, feeData } from "@/data"
 
 interface ClassReportData {
-  class: any
-  students: any[]
+  class: {
+    _id: string
+    departmentId: string
+    semester: number
+    classMode: string
+    type: string
+    status: string
+    createdAt: string
+    updatedAt: string
+  }
+  students: Array<{
+    _id: string
+    name: string
+    phone: string
+    parentPhone: string
+    status: string
+    studentId: number
+  }>
   attendanceStats: {
     totalStudents: number
     averageAttendance: number
@@ -33,88 +48,63 @@ interface ClassReportData {
   }
 }
 
+interface ClassType {
+  _id: string
+  departmentId: {
+    _id: string
+    name: string
+  }
+  semester: number
+  classMode: string
+  type: string
+  status: string
+  createdAt: string
+  updatedAt: string
+}
+
 export function ClassReport() {
   const [selectedClass, setSelectedClass] = useState("")
+  const [classList, setClassList] = useState<ClassType[]>([])
   const [reportData, setReportData] = useState<ClassReportData | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const generateReport = () => {
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const response = await fetch("/api/classes")
+        const data = await response.json()
+        setClassList(data)
+      } catch (error) {
+        console.error("Error fetching classes:", error)
+      }
+    }
+    fetchClasses()
+  }, [])
+
+  const generateReport = async () => {
     if (!selectedClass) return
 
     setLoading(true)
 
-    setTimeout(() => {
-      const classData = classes.find((c) => c.id === selectedClass)
-      if (!classData) {
-        setReportData(null)
-        setLoading(false)
-        return
-      }
-
-      const classStudents = students.filter((s) => s.classId === selectedClass)
-      const studentIds = classStudents.map((s) => s.id)
-
-      // Attendance stats
-      const classAttendance = attendanceData.filter((a) => studentIds.includes(a.studentId))
-      const today = new Date().toISOString().split("T")[0]
-      const todayAttendance = classAttendance.filter((a) => a.date === today)
-      const presentToday = todayAttendance.filter((a) => a.isPresent).length
-      const absentToday = todayAttendance.length - presentToday
-
-      const totalAttendanceRecords = classAttendance.length
-      const totalPresentRecords = classAttendance.filter((a) => a.isPresent).length
-      const averageAttendance =
-        totalAttendanceRecords > 0 ? Math.round((totalPresentRecords / totalAttendanceRecords) * 100) : 0
-
-      // Exam stats
-      const classExams = examData.filter((e) => studentIds.includes(e.studentId))
-      const examMarks = classExams.map((e) => e.marksObtained)
-      const averageMarks =
-        examMarks.length > 0 ? Math.round(examMarks.reduce((a, b) => a + b, 0) / examMarks.length) : 0
-      const highestMarks = examMarks.length > 0 ? Math.max(...examMarks) : 0
-      const lowestMarks = examMarks.length > 0 ? Math.min(...examMarks) : 0
-      const passedExams = classExams.filter((e) => e.marksObtained >= 50).length
-      const passRate = classExams.length > 0 ? Math.round((passedExams / classExams.length) * 100) : 0
-
-      // Fee stats
-      const classFees = feeData.filter((f) => studentIds.includes(f.studentId))
-      const totalFees = classFees.reduce((sum, f) => sum + f.amount, 0)
-      const collectedFees = classFees.reduce((sum, f) => sum + f.amountPaid, 0)
-      const pendingFees = totalFees - collectedFees
-      const defaulters = classFees.filter((f) => f.status === "unpaid").length
-
-      setReportData({
-        class: classData,
-        students: classStudents,
-        attendanceStats: {
-          totalStudents: classStudents.length,
-          averageAttendance,
-          presentToday,
-          absentToday,
-        },
-        examStats: {
-          averageMarks,
-          highestMarks,
-          lowestMarks,
-          passRate,
-        },
-        feeStats: {
-          totalFees,
-          collectedFees,
-          pendingFees,
-          defaulters,
-        },
-      })
+    try {
+      const response = await fetch(`/api/reports/class-report/${selectedClass}`)
+      if (!response.ok) throw new Error("Report not found")
+      const data = await response.json()
+      setReportData(data)
+    } catch (error) {
+      console.error("Error generating report:", error)
+      setReportData(null)
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
-  const handlePrint = () => {
-    window.print()
-  }
+  const handlePrint = () => window.print()
+  const handleDownload = () => console.log("Download report")
 
-  const handleDownload = () => {
-    console.log("Download report")
+  const getClassName = (classId: string) => {
+    const cls = classList.find(c => c._id === classId)
+    return cls ? `${cls.departmentId.name} - Semester ${cls.semester} (${cls.classMode})` : "Unknown Class"
   }
 
   return (
@@ -137,9 +127,9 @@ export function ClassReport() {
                   <SelectValue placeholder="Select a class" />
                 </SelectTrigger>
                 <SelectContent>
-                  {classes.map((cls) => (
-                    <SelectItem key={cls.id} value={cls.id}>
-                      {cls.name}
+                  {classList.map(cls => (
+                    <SelectItem key={cls._id} value={cls._id}>
+                      {`${cls.departmentId.name} - Semester ${cls.semester} (${cls.classMode})`}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -160,7 +150,7 @@ export function ClassReport() {
           {/* Report Header */}
           <div className="flex justify-between items-start print:hidden">
             <div>
-              <h2 className="text-xl font-semibold">Class Report - {reportData.class.name}</h2>
+              <h2 className="text-xl font-semibold">Class Report - {getClassName(selectedClass)}</h2>
               <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
             </div>
             <div className="flex gap-2">
@@ -226,7 +216,7 @@ export function ClassReport() {
           {/* Students List */}
           <Card>
             <CardHeader>
-              <CardTitle>Students in {reportData.class.name}</CardTitle>
+              <CardTitle>Students in {getClassName(selectedClass)}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -240,14 +230,16 @@ export function ClassReport() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {reportData.students.map((student) => (
-                    <TableRow key={student.id}>
+                  {reportData.students.map(student => (
+                    <TableRow key={student._id}>
                       <TableCell>{student.studentId}</TableCell>
                       <TableCell>{student.name}</TableCell>
                       <TableCell>{student.phone}</TableCell>
                       <TableCell>{student.parentPhone}</TableCell>
                       <TableCell>
-                        <Badge variant={student.status === "active" ? "default" : "secondary"}>{student.status}</Badge>
+                        <Badge variant={student.status === "active" ? "default" : "secondary"}>
+                          {student.status}
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))}
