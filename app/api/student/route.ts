@@ -13,7 +13,6 @@ export async function GET() {
   try {
     await connectDB()
     const students = await Student.find({})
-      .populate("facultyId", "name")
       .populate({
         path: "classId",
         select: "semester type classMode",
