@@ -8,12 +8,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, Download, PrinterIcon as Print, User, Calendar, FileText, DollarSign } from "lucide-react"
-import { students, attendanceData, examData, feeData, classes, courses, examTypes } from "@/data"
+import { classes, courses, examTypes } from "@/data"
 
 interface StudentReportData {
-  student: any
-  attendanceHistory: any[]
-  examHistory: any[]
+  student: {
+    _id: string
+    classId: { _id: string }
+    name: string
+    gender: string
+    parentPhone: string
+    phone: string
+    studentId: number
+    status: string
+    createdAt: string
+    updatedAt: string
+  }
+  attendanceHistory: Array<{
+    _id: string
+    date: string
+    courseId: string
+    isPresent: boolean
+  }>
+  examHistory: Array<{
+    _id: string
+    examTypeId: string
+    courseId: string
+    marksObtained: number
+    createdAt: string
+  }>
   feeHistory: any[]
   attendanceStats: {
     totalDays: number
@@ -28,45 +50,24 @@ export function StudentReport() {
   const [reportData, setReportData] = useState<StudentReportData | null>(null)
   const [loading, setLoading] = useState(false)
 
-  const generateReport = () => {
+  const generateReport = async () => {
     if (!studentId.trim()) return
 
     setLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      const student = students.find((s) => s.id === studentId || s.studentId === studentId)
-
-      if (!student) {
-        setReportData(null)
-        setLoading(false)
-        return
+    try {
+      const response = await fetch(`/api/reports/student-report/${studentId}`)
+      if (!response.ok) {
+        throw new Error("Student not found")
       }
-
-      const attendanceHistory = attendanceData.filter((a) => a.studentId === student.id)
-      const examHistory = examData.filter((e) => e.studentId === student.id)
-      const feeHistory = feeData.filter((f) => f.studentId === student.id)
-
-      // Calculate attendance stats
-      const totalDays = attendanceHistory.length
-      const presentDays = attendanceHistory.filter((a) => a.isPresent).length
-      const absentDays = totalDays - presentDays
-      const percentage = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0
-
-      setReportData({
-        student,
-        attendanceHistory,
-        examHistory,
-        feeHistory,
-        attendanceStats: {
-          totalDays,
-          presentDays,
-          absentDays,
-          percentage,
-        },
-      })
+      const data = await response.json()
+      setReportData(data)
+    } catch (error) {
+      console.error("Error fetching report:", error)
+      setReportData(null)
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const handlePrint = () => {
@@ -162,16 +163,16 @@ export function StudentReport() {
                   <p className="font-medium">{reportData.student.studentId}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                  <p className="font-medium">{reportData.student.phone}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">Parent Phone</Label>
+                  <p className="font-medium">{reportData.student.parentPhone}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Phone</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Student Phone</Label>
                   <p className="font-medium">{reportData.student.phone}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Class</Label>
-                  <p className="font-medium">{reportData.student.className}</p>
+                  <p className="font-medium">{getClassName(reportData.student.classId._id)}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground">Gender</Label>
@@ -182,8 +183,8 @@ export function StudentReport() {
                   <p className="font-medium capitalize">{reportData.student.status}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground">Date of Birth</Label>
-                  <p className="font-medium">{new Date(reportData.student.dateOfBirth).toLocaleDateString()}</p>
+                  <Label className="text-sm font-medium text-muted-foreground">Enrollment Date</Label>
+                  <p className="font-medium">{new Date(reportData.student.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
             </CardContent>
@@ -230,7 +231,7 @@ export function StudentReport() {
                     </TableHeader>
                     <TableBody>
                       {reportData.attendanceHistory.slice(0, 10).map((attendance) => (
-                        <TableRow key={attendance.id}>
+                        <TableRow key={attendance._id}>
                           <TableCell>{new Date(attendance.date).toLocaleDateString()}</TableCell>
                           <TableCell>{getCourseName(attendance.courseId)}</TableCell>
                           <TableCell>
@@ -287,8 +288,8 @@ export function StudentReport() {
                                   : "F"
 
                       return (
-                        <TableRow key={exam.id}>
-                          <TableCell>{new Date(exam.date).toLocaleDateString()}</TableCell>
+                        <TableRow key={exam._id}>
+                          <TableCell>{new Date(exam.createdAt).toLocaleDateString()}</TableCell>
                           <TableCell>{getCourseName(exam.courseId)}</TableCell>
                           <TableCell>{getExamTypeName(exam.examTypeId)}</TableCell>
                           <TableCell>{exam.marksObtained}</TableCell>
@@ -331,7 +332,7 @@ export function StudentReport() {
                   </TableHeader>
                   <TableBody>
                     {reportData.feeHistory.map((fee) => (
-                      <TableRow key={fee.id}>
+                      <TableRow key={fee._id}>
                         <TableCell className="capitalize">{fee.financeType}</TableCell>
                         <TableCell>${fee.amount}</TableCell>
                         <TableCell>${fee.amountPaid}</TableCell>
