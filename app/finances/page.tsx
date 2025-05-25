@@ -24,9 +24,9 @@ export default function ManagementPage() {
     <DashboardLayout>
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">University Management System</h1>
+          <h1 className="text-2xl font-bold tracking-tight">School Management System</h1>
           <p className="text-muted-foreground">
-            Manage your school's faculties, departments, classes, students, courses, exams, fees, and users.
+            Manage your school's   departments, classes, students, courses, exams, fees, and users.
           </p>
         </div>
 

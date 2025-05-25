@@ -19,20 +19,28 @@ import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import * as XLSX from "xlsx"
 
-export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
+export function ExamFileUpload({ onDone }: { onDone?: () => void }) {
   const [open, setOpen] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [success, setSuccess] = useState(false)
-  const [classes, setClasses] = useState<any[]>([])
-  const [selectedClass, setSelectedClass] = useState<string>("")
+  const [examTypes, setExamTypes] = useState<any[]>([])
+  const [courses, setCourses] = useState<any[]>([])
+  const [selectedExamType, setSelectedExamType] = useState<string>("")
+  const [selectedCourse, setSelectedCourse] = useState<string>("")
 
   useEffect(() => {
-    fetch("/api/classes")
+    // Fetch exam types
+    fetch("/api/exam-types")
       .then((res) => res.json())
-      .then(setClasses)
+      .then(setExamTypes)
+    
+    // Fetch courses
+    fetch("/api/courses")
+      .then((res) => res.json())
+      .then(setCourses)
   }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,8 +73,8 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
   }
 
   const handleUpload = async () => {
-    if (!file  || !selectedClass) {
-      setError("Please select  class, and upload a file.")
+    if (!file || !selectedExamType || !selectedCourse) {
+      setError("Please select exam type, course, and upload a file.")
       return
     }
 
@@ -81,19 +89,22 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]]
       const json = XLSX.utils.sheet_to_json(worksheet)
 
-      const students = json.map((student: any) => ({
-        ...student,
-        classId: selectedClass,
+      const exams = json.map((exam: any) => ({
+        studentId: exam.studentId,
+        marksObtained: exam.marksObtained,
+        examTypeId: selectedExamType,
+        courseId: selectedCourse
       }))
-      const res = await fetch("/api/student/upload", {
+
+      const res = await fetch("/api/exams/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ students }),
+        body: JSON.stringify(exams),
       })
 
       if (!res.ok) throw new Error("Upload failed")
 
-      // simulate progress UI
+      // Simulate progress
       for (let i = 0; i <= 100; i += 20) {
         await new Promise((resolve) => setTimeout(resolve, 200))
         setProgress(i)
@@ -121,7 +132,7 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
         <DialogTrigger asChild>
           <Button variant="outline">
             <FileUp className="mr-2 h-4 w-4" />
-            Upload Students
+            Upload Exams
           </Button>
         </DialogTrigger>
         <Button
@@ -129,7 +140,7 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
           className="ml-2"
           asChild
         >
-          <a href="/students-sample.xlsx" download>
+          <a href="/exams-sample.xlsx" download>
             <Download className="mr-2 h-4 w-4" />
             Download Sample
           </a>
@@ -137,30 +148,44 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
       </div>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Upload Student Data</DialogTitle>
+          <DialogTitle>Upload Exam Data</DialogTitle>
           <DialogDescription>
-            Select   class then upload Excel or CSV file with student data.
+            Select exam type and course, then upload Excel or CSV file with exam results.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Select onValueChange={setSelectedExamType}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Exam Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {examTypes.map((examType) => (
+                  <SelectItem key={examType._id} value={examType._id}>
+                    {examType.name} ({examType.marks} marks)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <Select onValueChange={setSelectedClass}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Class" />
-            </SelectTrigger>
-            <SelectContent>
-              {classes.map((cls) => (
-                <SelectItem key={cls._id} value={cls._id}>
-                  CMS-{cls.semester}-{cls.type} 
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <Select onValueChange={setSelectedCourse}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Course" />
+              </SelectTrigger>
+              <SelectContent>
+                {courses.map((course) => (
+                  <SelectItem key={course._id} value={course._id}>
+                    {course.courseName} ({course.code})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Input
-              id="student-file"
+              id="exam-file"
               type="file"
               accept=".xlsx,.xls,.csv"
               onChange={handleFileChange}
@@ -172,12 +197,8 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
             <div className="text-xs text-muted-foreground">
               <p className="font-semibold">Required file structure:</p>
               <ul className="list-disc list-inside space-y-1">
-                <li><code>name</code></li>
-                <li><code>gender</code> (e.g. "Male", "Female")</li>
-                <li><code>parentPhone</code> (numeric, more than 10 digits)</li>
-                <li><code>phone</code> (numeric, more than 10 digits)</li>
-                <li><code>studentId</code> (numeric)</li>
-                <li><code>status</code> (either "active" or "inactive")</li>
+                <li><code>studentId</code> (numeric student ID)</li>
+                <li><code>marksObtained</code> (numeric value)</li>
               </ul>
             </div>
           </div>
@@ -205,14 +226,14 @@ export function StudentFileUpload({ onDone }: { onDone?: () => void }) {
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertTitle className="text-green-600">Success</AlertTitle>
               <AlertDescription className="text-green-600">
-                Students uploaded successfully.
+                Exams uploaded successfully.
               </AlertDescription>
             </Alert>
           )}
         </div>
 
         <DialogFooter>
-          <Button onClick={handleUpload} disabled={!file || uploading} className="w-full sm:w-auto">
+          <Button onClick={handleUpload} disabled={!file || uploading || !selectedExamType || !selectedCourse} className="w-full sm:w-auto">
             {uploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

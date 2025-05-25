@@ -32,7 +32,6 @@ const ExamSchema: Schema<IExam> = new Schema(
     },
     date: {
       type: Date,
-      required: [true, 'Exam date is required'],
     },
   },
   {

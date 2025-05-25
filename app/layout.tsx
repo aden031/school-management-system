@@ -8,8 +8,8 @@ import { ProtectedRoute } from "@/components/layout/protected-route"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "University Management System",
-  description: "A modern University management system",
+  title: "School Management System",
+  description: "A modern School management system",
 }
 
 export default function RootLayout({

@@ -66,7 +66,7 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
           {getGreeting()}, {user?.fullname || "Unknown"}
         </h1>
         <p className="text-muted-foreground">
-          Welcome to your University management dashboard. Here's what's happening today.
+          Welcome to your School management dashboard. Here's what's happening today.
         </p>
       </section>
 
@@ -142,7 +142,7 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
           <Card>
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest actions and notifications from your University.</CardDescription>
+              <CardDescription>Latest actions and notifications from your School.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -196,7 +196,7 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
               Access Full Management System
             </CardTitle>
             <CardDescription>
-              Navigate to the complete University management interface with detailed controls and data management.
+              Navigate to the complete School management interface with detailed controls and data management.
             </CardDescription>
           </CardHeader>
           <CardFooter>

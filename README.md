@@ -6,6 +6,7 @@
 - [`pnpm`](https://pnpm.io/) package manager
 
 ## Setup
+
 ### 1. Install pnpm if you don't have it
 
 ```bash
@@ -15,7 +16,7 @@ npm install -g pnpm
 ### 2. Clone the repository
 
 ```bash
-git clone https://github.com/Alaaja8899/university-management-system
+git clone https://github.com/Alaaja8899/School-management-system
 ```
 
 ### 3. Install dependencies

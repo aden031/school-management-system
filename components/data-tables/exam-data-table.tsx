@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ExamDialog } from "@/components/forms/exam-form"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
+import { ExamFileUpload } from "../forms/exam-bulk-upload"
 
 export type Exam = {
   id: string
@@ -169,6 +170,7 @@ export function ExamDataTable() {
           onChange={(event) => table.getColumn("studentName")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
+        <ExamFileUpload/>
         <ExamDialog mode="add" onDone={fetchExams} />
       </div>
 

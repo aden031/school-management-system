@@ -12,7 +12,7 @@ import {
   Home,
   LayoutDashboard,
   Menu,
-  University,
+  School,
   Settings,
   Users,
   X,
@@ -74,7 +74,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
       >
         <div className={cn("flex h-16 items-center border-b px-6", !open && "md:justify-center md:px-0")}>
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <University className="h-6 w-6" />
+            <School className="h-6 w-6" />
             {(open || isMobileOpen) && <span className="text-lg">EduAdmin</span>}
           </Link>
           <Button variant="ghost" size="icon" className="absolute right-4 top-4 md:hidden" onClick={toggleMobileMenu}>

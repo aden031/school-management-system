@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Eye, EyeOff, University } from "lucide-react"
+import { Eye, EyeOff, School } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -64,7 +64,7 @@ export function LoginForm() {
       <CardHeader className="space-y-1">
         <div className="flex justify-center mb-2">
           <div className="rounded-full bg-primary/10 p-2">
-            <University className="h-6 w-6 text-primary" />
+            <School className="h-6 w-6 text-primary" />
           </div>
         </div>
         <CardTitle className="text-2xl text-center">EduAdmin</CardTitle>
