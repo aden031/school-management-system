@@ -6,7 +6,7 @@ const connectToDatabase = async () => {
   if (isConnected) return
 
   try {
-    await mongoose.connect(process.env.NEXT_PUBLIC_MONGODB_URI!, {
+    await mongoose.connect("mongodb+srv://alaja:1dqEAiHKSIiWuW1r@cluster0.grizelt.mongodb.net/garaduates?retryWrites=true&w=majority&appName=Cluster0", {
       dbName: "garaduates", 
     })
     isConnected = true
