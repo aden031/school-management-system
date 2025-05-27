@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/db"
 import Class from "@/lib/models/class"
-import Faculty from "@/lib/models/faculty"
 import Department from "@/lib/models/department"
 import mongoose from "mongoose"
 
@@ -18,7 +17,6 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
     }
 
     const classData = await Class.findById(id)
-      .populate("facultyId", "name")
       .populate("departmentId", "name")
 
     if (!classData) {
@@ -55,12 +53,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Invalid department ID" }, { status: 400 })
     }
 
-    if (facultyId) {
-      const faculty = await Faculty.findById(facultyId)
-      if (!faculty) {
-        return NextResponse.json({ error: "Faculty not found" }, { status: 404 })
-      }
-    }
 
     if (departmentId) {
       const department = await Department.findById(departmentId)

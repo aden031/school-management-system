@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/db"
 import Department from "@/lib/models/department"
-import Faculty from "@/lib/models/faculty"
 import mongoose from "mongoose"
 
 /**
@@ -47,12 +46,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Invalid faculty ID" }, { status: 400 })
     }
 
-    if (facultyId) {
-      const faculty = await Faculty.findById(facultyId)
-      if (!faculty) {
-        return NextResponse.json({ error: "Faculty not found" }, { status: 404 })
-      }
-    }
 
     const updated = await Department.findByIdAndUpdate(
       id,

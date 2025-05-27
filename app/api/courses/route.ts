@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/db"
 import Course from "@/lib/models/course"
-import Faculty from "@/lib/models/faculty"
 import Department from "@/lib/models/department"
 import mongoose from "mongoose"
 
@@ -13,7 +12,6 @@ export async function GET() {
   try {
     await connectDB()
     const courses = await Course.find({})
-      .populate("facultyId", "name")
       .populate("departmentId", "name")
       .sort({ createdAt: -1 })
 
@@ -49,10 +47,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if faculty exists
-    const faculty = await Faculty.findById(body.facultyId)
-    if (!faculty) {
-      return NextResponse.json({ error: "Faculty not found" }, { status: 404 })
-    }
 
     // Check if department exists
     const department = await Department.findById(body.departmentId)
