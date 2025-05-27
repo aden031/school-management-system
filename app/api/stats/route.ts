@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/db';
 import Student from '@/lib/models/student';
-import Faculty from '@/lib/models/faculty';
 import Department from '@/lib/models/department';
 import Course from '@/lib/models/course';
 
@@ -10,16 +9,15 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    const [students, faculty, departments, courses] = await Promise.all([
+    const [students,  departments, courses] = await Promise.all([
       Student.countDocuments(),
-      Faculty.countDocuments(),
       Department.countDocuments(),
       Course.countDocuments(),
     ]);
 
     return NextResponse.json({
       totalStudents: students,
-      totalFaculty: faculty,
+      totalFaculty: 0,
       totalDepartments: departments,
       totalCourses: courses,
     });
