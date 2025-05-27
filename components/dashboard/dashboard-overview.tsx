@@ -108,7 +108,7 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
                 View All
               </Button>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
               <QuickActionCard
                 title="Add Student"
                 description="Register a new student"
@@ -120,12 +120,6 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
                 description="View and edit courses"
                 icon={<BookOpen className="h-5 w-5" />}
                 href="/courses"
-              />
-              <QuickActionCard
-                title="Faculty Directory"
-                description="Browse faculty members"
-                icon={<Building2 className="h-5 w-5" />}
-                href="/faculties"
               />
             </div>
           </section>
