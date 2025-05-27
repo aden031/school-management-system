@@ -79,7 +79,7 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatsCard
               title="Total Students"
               value={`${stats?.totalStudents}`}
@@ -91,12 +91,6 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
               value={`${stats?.totalCourses}`}
               description="Across 8 departments"
               icon={<BookOpen className="h-5 w-5 text-muted-foreground" />}
-            />
-            <StatsCard
-              title="Faculties"
-              value={`${stats?.totalFaculty}`}
-              description="12 new this semester"
-              icon={<GraduationCap className="h-5 w-5 text-muted-foreground" />}
             />
             <StatsCard
               title="Total Departments"
@@ -201,12 +195,6 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
           </CardHeader>
           <CardFooter>
             <div className="flex flex-col gap-2 w-full">
-              <Link href="/faculties" className="w-full">
-                <Button variant="outline" className="w-full flex items-center justify-between">
-                  Faculties
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
               <Link href="/departments" className="w-full">
                 <Button variant="outline" className="w-full flex items-center justify-between">
                   Departments
