@@ -33,9 +33,6 @@ const CourseSchema: Schema = new Schema(
     },
     semester: {
       type: Number,
-      required: [true, "Semester is required"],
-      min: 1,
-      max: 8,
     },
   },
   {

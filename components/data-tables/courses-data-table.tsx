@@ -29,7 +29,6 @@ export type Course = {
   departmentId: string
   departmentName: string
   courseName: string
-  semester: number
   teacherId: string
   teacherName: string
 }
@@ -51,7 +50,6 @@ export function CoursesDataTable() {
         departmentId: course.departmentId?._id,
         departmentName: course.departmentId?.name,
         courseName: course.courseName,
-        semester: course.semester,
         teacherId: course.teacherId?._id,
         teacherName: course.teacherId?.FullName,
       }))
@@ -72,7 +70,6 @@ export function CoursesDataTable() {
     { accessorKey: "courseName", header: "Course Name" },
     { accessorKey: "departmentName", header: "Department" },
     { accessorKey: "teacherName", header: "Teacher" }, // Updated to teacherName
-    { accessorKey: "semester", header: "Semester" },
     {
       id: "actions",
       cell: ({ row }) => {

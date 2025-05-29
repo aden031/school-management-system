@@ -10,10 +10,10 @@ export default function Home() {
     <DashboardLayout>
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">School Management System</h1>
-          <p className="text-muted-foreground">
-            Manage your School's   departments, classes, students, courses, and users.
-          </p>
+            <h1 className="text-2xl font-bold tracking-tight">Systemka  Maamulka Dugsiga</h1>
+            <p className="text-muted-foreground">
+            Maamul waaxyaha Xarumaha, fasallada, ardayda, koorsooyinka, iyo isticmaalayaasha systemka.
+            </p>
         </div>
         <Tabs defaultValue="exam" className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-2">

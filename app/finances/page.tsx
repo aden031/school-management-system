@@ -24,10 +24,10 @@ export default function ManagementPage() {
     <DashboardLayout>
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">School Management System</h1>
-          <p className="text-muted-foreground">
-            Manage your school's   departments, classes, students, courses, exams, fees, and users.
-          </p>
+            <h1 className="text-2xl font-bold tracking-tight">Systemka  Maamulka Dugsiga</h1>
+            <p className="text-muted-foreground">
+            Maamul waaxyaha Xarumaha, fasallada, ardayda, koorsooyinka, iyo isticmaalayaasha systemka.
+            </p>
         </div>
 
         <Tabs defaultValue="fee" className="w-full">
