@@ -22,7 +22,6 @@ export type Department = {
   _id: string
   name?: string
   studentCount?: number
-  departmentMode?: string
   createdAt?: string
   updatedAt?: string
 }
@@ -71,10 +70,6 @@ export function DepartmentDataTable() {
     {
       header: "Student Count",
       cell: ({ row }) => row.original?.studentCount ?? "Unknown",
-    },
-    {
-      header: "Department Mode",
-      cell: ({ row }) => row.original?.departmentMode ?? "Unknown",
     },
     {
       id: "actions",

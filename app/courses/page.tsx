@@ -17,7 +17,7 @@ export default function Home() {
 
         <Tabs defaultValue="courses" className="w-full">
           <TabsList className="grid w-full grid-cols-1">
-            <TabsTrigger value="courses">Courses</TabsTrigger>
+            <TabsTrigger value="courses">Maadooyinka</TabsTrigger>
           </TabsList>
  
           <TabsContent value="courses">

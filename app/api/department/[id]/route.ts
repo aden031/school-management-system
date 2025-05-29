@@ -39,7 +39,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const body = await request.json()
-    const { name, facultyId, departmentMode, studentCount } = body
+    const { name, facultyId, studentCount } = body
 
     // Optional: validate facultyId if it's being changed
     if (facultyId && !mongoose.Types.ObjectId.isValid(facultyId)) {
@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const updated = await Department.findByIdAndUpdate(
       id,
-      { name, facultyId, departmentMode, studentCount },
+      { name, facultyId,  studentCount },
       { new: true }
     ).populate("facultyId", "name")
 

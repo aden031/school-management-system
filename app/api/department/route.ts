@@ -29,16 +29,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate request body
-    if (!body.name ||  !body.departmentMode) {
-      return NextResponse.json({ error: "Name and departmentMode are required" }, { status: 400 })
+    if (!body.name) {
+      return NextResponse.json({ error: "Name  is required" }, { status: 400 })
     }
 
 
     // Create new department
     const department = await Department.create({
       name: body.name,
-      studentCount: body.studentCount || 0,
-      departmentMode: body.departmentMode,
+      studentCount: body.studentCount || 0 
+  
     })
 
 

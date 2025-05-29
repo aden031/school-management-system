@@ -23,7 +23,6 @@ import axios from "axios"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Department name must be at least 2 characters." }),
-  departmentMode: z.string({ required_error: "Please select a department mode." }),
 })
 
 type DepartmentFormValues = z.infer<typeof formSchema>
@@ -39,7 +38,6 @@ export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogP
 
   const defaultValues: Partial<DepartmentFormValues> = {
     name: department?.name || "",
-    departmentMode: department?.departmentMode || "",
   }
 
   const form = useForm<DepartmentFormValues>({
@@ -50,7 +48,6 @@ export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogP
   const onSubmit = async (data: DepartmentFormValues) => {
     const payload = {
       name: data.name,
-      departmentMode: data.departmentMode,
     }
 
     try {
@@ -84,7 +81,7 @@ export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogP
         {mode === "add" ? (
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add Department
+            Kudara Xarun Cusub
           </Button>
         ) : mode === "edit" ? (
           <Button variant="outline" size="icon">
@@ -99,14 +96,14 @@ export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogP
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === "add" ? "Add Department" : mode === "edit" ? "Edit Department" : "Delete Department"}
+            {mode === "add" ? "Kudar Xarun" : mode === "edit" ? "Waxka badal xarun" : "Deletegareey Xarun"}
           </DialogTitle>
           <DialogDescription>
             {mode === "add"
-              ? "Add a new department to the system."
+              ? "Kudar xarun cusub systemka."
               : mode === "edit"
-              ? "Make changes to the department information."
-              : "Are you sure you want to delete this department?"}
+              ? "Kusameey is badel xogta xarunta."
+              : "Ma hubtaa Inaa xaruntan Tirtirayso?"}
           </DialogDescription>
         </DialogHeader>
 
@@ -114,17 +111,17 @@ export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogP
           <>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Warning</AlertTitle>
+              <AlertTitle>Digniin</AlertTitle>
               <AlertDescription>
-                This action cannot be undone. This will permanently delete the department.
+                Haddi aad falkan sameyso dib looma soocelin karo , xaruntana si toos ubaxaysaa.
               </AlertDescription>
             </Alert>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                Ka laabo
               </Button>
               <Button variant="destructive" onClick={onDelete}>
-                Delete
+                Deletegareey
               </Button>
             </DialogFooter>
           </>
@@ -136,37 +133,16 @@ export function DepartmentDialog({ mode, department, onDone }: DepartmentDialogP
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Department Name</FormLabel>
+                    <FormLabel>Magaca Xarunta</FormLabel>
                     <FormControl>
-                      <Input placeholder="Department name" {...field} />
+                      <Input placeholder="Magaca Xarunta" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="departmentMode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Department Mode</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a mode" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="CMS">CMS</SelectItem>
-                        <SelectItem value="LMS">LMS</SelectItem>
-                        <SelectItem value="ERP">ERP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              
 
               <DialogFooter>
                 <Button type="submit">{mode === "add" ? "Add" : "Save changes"}</Button>

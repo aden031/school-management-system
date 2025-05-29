@@ -32,7 +32,7 @@ export default function ManagementPage() {
 
         <Tabs defaultValue="fee" className="w-full">
             <TabsList className="w-full mb-6">
-              <TabsTrigger value="fee" className="w-full">Fee</TabsTrigger>
+              <TabsTrigger value="fee" className="w-full">Lacag Bixinnada</TabsTrigger>
             </TabsList>
 
 

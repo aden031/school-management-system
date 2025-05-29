@@ -25,8 +25,6 @@ const DepartmentSchema: Schema = new Schema(
     },
     departmentMode: {
       type: String,
-      required: [true, "Department mode is required"],
-      trim: true,
     },
   },
   {

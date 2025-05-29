@@ -17,7 +17,7 @@ export default function Home() {
         </div>
         <Tabs defaultValue="exam" className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-2">
-            <TabsTrigger value="exam">Exam</TabsTrigger>
+            <TabsTrigger value="exam">Imtixaanaadka</TabsTrigger>
             <TabsTrigger value="examtype">Exam Type</TabsTrigger>
 
           </TabsList>
