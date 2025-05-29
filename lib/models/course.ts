@@ -30,8 +30,6 @@ const CourseSchema: Schema = new Schema(
     },
     code: {
       type: String,
-      required: [true, "Course code is required"],
-      trim: true,
     },
     semester: {
       type: Number,

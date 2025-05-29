@@ -43,7 +43,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const body = await request.json()
-    const { courseName, code, semester, departmentId , teacherId } = body
+    const { courseName,  semester, departmentId , teacherId } = body
 
     // Validate related IDs if they're being updated
     if (!mongoose.Types.ObjectId.isValid(departmentId) || !mongoose.Types.ObjectId.isValid(teacherId)) {
@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const updated = await Course.findByIdAndUpdate(
       id,
-      { courseName, code, semester ,teacherId ,departmentId },
+      { courseName,  semester ,teacherId ,departmentId },
       { new: true }
     )
     .populate("departmentId", "name")

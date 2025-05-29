@@ -13,7 +13,7 @@ export async function GET() {
   try {
     await connectDB()
     const courses = await Course.find({})
-      // .populate("teacherId", "FullName")
+      .populate("teacherId", "FullName")
       .populate("departmentId", "name")
       .sort({ createdAt: -1 })
 
@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate request body
-    if (!body.courseName || !body.code || !body.semester  || !body.departmentId || !body.teacherId) {
+    if (!body.courseName ||   !body.semester  || !body.departmentId || !body.teacherId) {
       return NextResponse.json(
         {
-          error: "Course name, code, semester, faculty ID, and department ID are required",
+          error: "Course name,  semester, faculty ID, and department ID are required",
         },
         { status: 400 },
       )
@@ -69,7 +69,6 @@ export async function POST(request: NextRequest) {
     // Create new course
     const course = await Course.create({
       courseName: body.courseName,
-      code: body.code,
       teacherId:body.teacherId,
       semester: body.semester,
       departmentId: body.departmentId,

@@ -29,10 +29,9 @@ export type Course = {
   departmentId: string
   departmentName: string
   courseName: string
-  code: string
   semester: number
-  facultyId: string
-  facultyName: string
+  teacherId: string
+  teacherName: string
 }
 
 export function CoursesDataTable() {
@@ -52,10 +51,9 @@ export function CoursesDataTable() {
         departmentId: course.departmentId?._id,
         departmentName: course.departmentId?.name,
         courseName: course.courseName,
-        code: course.code,
         semester: course.semester,
-        facultyId: course.facultyId?._id,
-        facultyName: course.facultyId?.name,
+        teacherId: course.teacherId?._id,
+        teacherName: course.teacherId?.FullName,
       }))
 
       setData(formatted)
@@ -71,10 +69,9 @@ export function CoursesDataTable() {
   }, [])
 
   const columns: ColumnDef<Course>[] = [
-    { accessorKey: "code", header: "Code" },
     { accessorKey: "courseName", header: "Course Name" },
     { accessorKey: "departmentName", header: "Department" },
-    { accessorKey: "facultyName", header: "Faculty" },
+    { accessorKey: "teacherName", header: "Teacher" }, // Updated to teacherName
     { accessorKey: "semester", header: "Semester" },
     {
       id: "actions",

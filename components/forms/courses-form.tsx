@@ -38,7 +38,6 @@ const formSchema = z.object({
   departmentId: z.string().min(1, "Department is required"),
   teacherId: z.string().min(1, "Teacher is required"), // Added teacherId field
   courseName: z.string().min(2, "Course name must be at least 2 characters"),
-  code: z.string().min(2, "Course code must be at least 2 characters"),
   semester: z.coerce.number().min(1).max(8),
 })
 
@@ -51,7 +50,6 @@ interface CoursesDialogProps {
     departmentId: string
     teacherId: string // Added teacherId
     courseName: string
-    code: string
     semester: number
   }
   onSuccess?: () => void
@@ -69,7 +67,6 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
       departmentId: "",
       teacherId: "", // Added default value
       courseName: "",
-      code: "",
       semester: 1,
     },
   })
@@ -81,7 +78,6 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
         departmentId: course.departmentId,
         teacherId: course.teacherId, // Added teacherId
         courseName: course.courseName,
-        code: course.code,
         semester: course.semester,
       })
     } else if (open && mode === "add") {
@@ -89,7 +85,6 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
         departmentId: "",
         teacherId: "", // Added teacherId
         courseName: "",
-        code: "",
         semester: 1,
       })
     }
@@ -278,34 +273,7 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Course Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Course code" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="semester"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Semester</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+              
               <DialogFooter>
                 <Button type="submit" disabled={loading}>
                   {mode === "edit" ? "Save Changes" : "Add Course"}
