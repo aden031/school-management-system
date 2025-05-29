@@ -92,7 +92,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               )}
             >
               <LayoutDashboard className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Dashboard</span>}
+              {(open || isMobileOpen) && <span>Xogta Guud</span>}
             </Link>
             {(open || isMobileOpen) && (
               <div className="mt-2 px-3 text-xs font-semibold text-muted-foreground">Academic</div>
@@ -105,7 +105,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               )}
             >
               <BookOpen className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Departments</span>}
+              {(open || isMobileOpen) && <span>Xarumaha</span>}
             </Link>
             <Link
               href="/classes"
@@ -115,7 +115,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               )}
             >
               <GraduationCap className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Classes</span>}
+              {(open || isMobileOpen) && <span>Fasalada</span>}
             </Link>
             <Link
               href="/students"
@@ -125,7 +125,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               )}
             >
               <Users className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Students</span>}
+              {(open || isMobileOpen) && <span>Ardayda</span>}
             </Link>
             <Link
               href="/attendances"
@@ -135,7 +135,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               )}
             >
               <BookCheck className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Attendaces</span>}
+              {(open || isMobileOpen) && <span>Xaadirinta</span>}
             </Link>
             <Link
               href="/courses"
@@ -145,7 +145,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               )}
             >
               <BookOpen className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Courses</span>}
+              {(open || isMobileOpen) && <span>Maadooyinka</span>}
             </Link>
             <Link
               href="/exams"
@@ -155,7 +155,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               )}
             >
               <GraduationCap className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Exams</span>}
+              {(open || isMobileOpen) && <span>Imtixanadka</span>}
             </Link>
 
             <Link
@@ -177,7 +177,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
               )}
             >
               <Coins className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Finances</span>}
+              {(open || isMobileOpen) && <span>Lacag Bixinada</span>}
             </Link>
             
             {(open || isMobileOpen) && (
