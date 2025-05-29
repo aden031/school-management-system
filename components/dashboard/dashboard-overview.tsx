@@ -46,9 +46,9 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
   // Get current time of day for greeting
   const getGreeting = () => {
     const hour = new Date().getHours()
-    if (hour < 12) return "Good morning"
-    if (hour < 18) return "Good afternoon"
-    return "Good evening"
+    if (hour < 12) return "Subax wanaagsan"
+    if (hour < 18) return "Galab Wanaagsan"
+    return "Fiidnimo wacan"
   }
 
   useEffect(()=>{
@@ -66,160 +66,160 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
           {getGreeting()}, {user?.fullname || "Unknown"}
         </h1>
         <p className="text-muted-foreground">
-          Welcome to your School management dashboard. Here's what's happening today.
+          Ku soo dhawoow barta maamulka iskuulka. Waa kuwan waxyaabaha maanta dhacaya.
         </p>
       </section>
 
       {/* Dashboard Tabs */}
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="overview">Guudmar</TabsTrigger>
+            <TabsTrigger value="activity">Waxqabad</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatsCard
-              title="Total Students"
+              title="Ardayda Guud"
               value={`${stats?.totalStudents}`}
-              description="+12% from last month"
+              description="+12% bishii hore"
               icon={<Users className="h-5 w-5 text-muted-foreground" />}
             />
             <StatsCard
-              title="Active Courses"
+              title="Maadooyinka Ladhigto"
               value={`${stats?.totalCourses}`}
-              description="Across 8 departments"
+              description="8 waaxood guud ahaan"
               icon={<BookOpen className="h-5 w-5 text-muted-foreground" />}
             />
             <StatsCard
-              title="Total Departments"
+              title="Xarumaha Guud"
               value={`${stats?.totalDepartments}`}
-              description="12 new this semester"
+              description="12 cusub faslakan-kan"
               icon={<GraduationCap className="h-5 w-5 text-muted-foreground" />}
             />
-          </div>
+            </div>
 
           {/* Quick Actions */}
-          <section className="space-y-4">
+            <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold tracking-tight">Quick Actions</h2>
+              <h2 className="text-xl font-semibold tracking-tight">Ficilo Degdeg ah</h2>
               <Button variant="outline" size="sm">
-                View All
+              Dhammaan eeg
               </Button>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
               <QuickActionCard
-                title="Add Student"
-                description="Register a new student"
-                icon={<Users className="h-5 w-5" />}
-                href="/students"
+              title="Ku dar Arday"
+              description="Diiwaan geli arday cusub"
+              icon={<Users className="h-5 w-5" />}
+              href="/students"
               />
               <QuickActionCard
-                title="Manage Courses"
-                description="View and edit courses"
-                icon={<BookOpen className="h-5 w-5" />}
-                href="/courses"
+              title="Maamul Maadooyinka"
+              description="Eeg oo wax ka beddel maadooyinka"
+              icon={<BookOpen className="h-5 w-5" />}
+              href="/courses"
               />
             </div>
-          </section>
+            </section>
 
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest actions and notifications from your School.</CardDescription>
+              <CardTitle>Waxqabadkii Ugu Dambeeyay</CardTitle>
+              <CardDescription>Fariimaha iyo falalka ugu dambeeyay ee ka dhacay iskuulkaaga.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <ActivityItem
-                  title="New student registration"
-                  description="Hamza was registered in Computer Science department"
-                  time="10 minutes ago"
-                  icon={<Users className="h-4 w-4" />}
-                />
-                <ActivityItem
-                  title="Course schedule updated"
-                  description="Introduction to Programming schedule was modified"
-                  time="1 hour ago"
-                  icon={<BookOpen className="h-4 w-4" />}
-                />
-                <ActivityItem
-                  title="Faculty meeting reminder"
-                  description="Department heads meeting tomorrow at 10:00 AM"
-                  time="2 hours ago"
-                  icon={<Bell className="h-4 w-4" />}
-                />
-                <ActivityItem
-                  title="Grades submitted"
-                  description="Prof. Smith submitted grades for Advanced Mathematics"
-                  time="Yesterday"
-                  icon={<CheckCircle2 className="h-4 w-4" />}
-                />
-                <ActivityItem
-                  title="New department proposal"
-                  description="Review proposal for Data Science department"
-                  time="2 days ago"
-                  icon={<Building2 className="h-4 w-4" />}
-                />
+          <ActivityItem
+            title="Diiwaangelin arday cusub"
+            description="Hamza waxaa loo diiwaangeliyay waaxda Computer Science"
+            time="10 daqiiqo kahor"
+            icon={<Users className="h-4 w-4" />}
+          />
+          <ActivityItem
+            title="Jadwalka maadada waa la cusbooneysiiyay"
+            description="Jadwalka 'Hordhac Barnaamij Sameynta' waa la beddelay"
+            time="1 saac kahor"
+            icon={<BookOpen className="h-4 w-4" />}
+          />
+          <ActivityItem
+            title="Xasuusin kulan macallimiin"
+            description="Kulanka madaxda waaxyaha berri 10:00 subaxnimo"
+            time="2 saac kahor"
+            icon={<Bell className="h-4 w-4" />}
+          />
+          <ActivityItem
+            title="Darajooyin la gudbiyay"
+            description="Prof. ahmed wuxuu gudbiyay darajooyinka 'Xisaabta Sare'"
+            time="Shalay"
+            icon={<CheckCircle2 className="h-4 w-4" />}
+          />
+          <ActivityItem
+            title="Soo jeedin waax cusub"
+            description="Dib u eegis ku samee soo jeedinta waaxda Data Science"
+            time="2 maalmood kahor"
+            icon={<Building2 className="h-4 w-4" />}
+          />
               </div>
             </CardContent>
             <CardFooter>
               <Button variant="outline" className="w-full">
-                View All Activity
+          Dhammaan Waxqabadka Daaawo
               </Button>
             </CardFooter>
           </Card>
         </TabsContent>
-      </Tabs>
+            </Tabs>
 
       {/* Management System Access */}
       <section className="pt-4">
         <Card className="bg-primary/5 border-primary/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LayoutDashboard className="h-5 w-5" />
-              Access Full Management System
-            </CardTitle>
-            <CardDescription>
-              Navigate to the complete School management interface with detailed controls and data management.
-            </CardDescription>
+        <CardTitle className="flex items-center gap-2">
+          <LayoutDashboard className="h-5 w-5" />
+          Gal Nidaamka Maamulka Buuxa
+        </CardTitle>
+        <CardDescription>
+          U gudub interface-ka maamulka iskuulka oo dhameystiran, si aad u hesho xakameyn iyo maarayn xog faahfaahsan.
+        </CardDescription>
           </CardHeader>
           <CardFooter>
-            <div className="flex flex-col gap-2 w-full">
-              <Link href="/departments" className="w-full">
-                <Button variant="outline" className="w-full flex items-center justify-between">
-                  Departments
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/students" className="w-full">
-                <Button variant="outline" className="w-full flex items-center justify-between">
-                  Students
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/classes" className="w-full">
-                <Button variant="outline" className="w-full flex items-center justify-between">
-                  Classes
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/courses" className="w-full">
-                <Button variant="outline" className="w-full flex items-center justify-between">
-                  Courses
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/users" className="w-full">
-                <Button variant="outline" className="w-full flex items-center justify-between">
-                  Users
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
+        <div className="flex flex-col gap-2 w-full">
+          <Link href="/departments" className="w-full">
+            <Button variant="outline" className="w-full flex items-center justify-between">
+          Xarumaha
+          <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/students" className="w-full">
+            <Button variant="outline" className="w-full flex items-center justify-between">
+          Ardayda
+          <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/classes" className="w-full">
+            <Button variant="outline" className="w-full flex items-center justify-between">
+          Fasalada
+          <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/courses" className="w-full">
+            <Button variant="outline" className="w-full flex items-center justify-between">
+          Maadooyinka
+          <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="/users" className="w-full">
+            <Button variant="outline" className="w-full flex items-center justify-between">
+          Users
+          <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
           </CardFooter>
         </Card>
       </section>
