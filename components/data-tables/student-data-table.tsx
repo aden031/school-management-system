@@ -66,19 +66,19 @@ export function StudentDataTable() {
   const columns: ColumnDef<Student>[] = [
     {
       accessorKey: "studentId",
-      header: "Student ID",
+      header: "ID-ga ardayga",
     },
     {
       accessorKey: "name",
-      header: "Name",
+      header: "Magaca",
     },
     {
       accessorKey: "className",
-      header: "Class",
+      header: "Fasalka",
     },
     {
       accessorKey: "parentPhone",
-      header: "Parent Phone",
+      header: "Talefon walidka",
     },
     {
       accessorKey: "status",
@@ -125,7 +125,7 @@ export function StudentDataTable() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Input
-          placeholder="Filter students..."
+          placeholder="Raadi Arday..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
           className="max-w-sm"

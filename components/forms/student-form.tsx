@@ -111,7 +111,7 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
       <DialogTrigger asChild>
         {mode === "add" ? (
           <Button>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Student
+            <PlusCircle className="mr-2 h-4 w-4" /> Kudar Arday
           </Button>
         ) : mode === "edit" ? (
           <Button variant="outline" size="icon">
@@ -128,29 +128,29 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
         <DialogHeader>
           <DialogTitle>
             {mode === "add"
-              ? "Add Student"
+              ? "Kudar Arday"
               : mode === "edit"
-              ? "Edit Student"
-              : "Delete Student"}
+              ? "Wax Kabadal Arday"
+              : "Deletegareey"}
           </DialogTitle>
           <DialogDescription>
             {mode === "delete"
-              ? "Are you sure you want to delete this student?"
-              : "Fill in the student details."}
+              ? "Mahubtaa inaad deletegreneyso ardaygaan"
+              : "Buuxi xogta ardayga."}
           </DialogDescription>
         </DialogHeader>
 
         {mode === "delete" ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              This action cannot be undone.
+              Falkan dib logama noqon karo haddu dhaco.
             </p>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                Ka laabo
               </Button>
               <Button variant="destructive" onClick={onDelete}>
-                Confirm Delete
+                Xaqiiji deletegreenta
               </Button>
             </DialogFooter>
           </div>
@@ -162,9 +162,9 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>Magaca</FormLabel>
                     <FormControl>
-                      <Input placeholder="Student Name" {...field} />
+                      <Input placeholder="Magaca Ardayga" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -176,10 +176,10 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
                 name="classId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Class</FormLabel>
+                    <FormLabel>Falsalka</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || ""}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select Class" />
+                        <SelectValue placeholder="Dooro fasalka" />
                       </SelectTrigger>
                       <SelectContent>
                         {classes.map(cls => (
@@ -199,9 +199,9 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
                 name="parentPhone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Parent Phone</FormLabel>
+                    <FormLabel>Talefonka walidka</FormLabel>
                     <FormControl>
-                      <Input placeholder="Phone Number" {...field} />
+                      <Input placeholder="Taleefoon number" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -213,11 +213,11 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
                 name="studentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Student ID</FormLabel>
+                    <FormLabel>ID-ga</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="Student ID"
+                        placeholder="ID-ga Ardayga"
                         {...field}
                         value={field.value || ""}
                         onChange={e => field.onChange(e.target.value)}
@@ -253,7 +253,7 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
 
               <DialogFooter>
                 <Button type="submit">
-                  {mode === "add" ? "Add Student" : "Save Changes"}
+                  {mode === "add" ? "Kudar Arday" : "Xaqiiji isbedelka"}
                 </Button>
               </DialogFooter>
             </form>
