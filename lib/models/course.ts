@@ -34,11 +34,6 @@ const CourseSchema: Schema = new Schema(
       min: 1,
       max: 8,
     },
-    facultyId: {
-      type: Schema.Types.ObjectId,
-      ref: "Faculty",
-      required: [true, "Faculty ID is required"],
-    },
   },
   {
     timestamps: true,

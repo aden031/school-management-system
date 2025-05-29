@@ -35,7 +35,6 @@ import { Edit, PlusCircle, Trash2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const formSchema = z.object({
-  facultyId: z.string().min(1, "Faculty is required"),
   departmentId: z.string().min(1, "Department is required"),
   courseName: z.string().min(2, "Course name must be at least 2 characters"),
   code: z.string().min(2, "Course code must be at least 2 characters"),
@@ -48,7 +47,6 @@ interface CoursesDialogProps {
   mode: "add" | "edit" | "delete"
   course?: {
     _id: string
-    facultyId: string
     departmentId: string
     courseName: string
     code: string
@@ -60,13 +58,11 @@ interface CoursesDialogProps {
 export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [faculties, setFaculties] = useState<any[]>([])
   const [departments, setDepartments] = useState<any[]>([])
 
   const form = useForm<CoursesFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      facultyId: "",
       departmentId: "",
       courseName: "",
       code: "",
@@ -78,7 +74,6 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
   useEffect(() => {
     if (open && (mode === "edit" || mode === "delete") && course) {
       form.reset({
-        facultyId: course.facultyId,
         departmentId: course.departmentId,
         courseName: course.courseName,
         code: course.code,
@@ -86,7 +81,6 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
       })
     } else if (open && mode === "add") {
       form.reset({
-        facultyId: "",
         departmentId: "",
         courseName: "",
         code: "",
@@ -98,15 +92,13 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
   useEffect(() => {
     async function fetchOptions() {
       try {
-        const [facRes, depRes] = await Promise.all([
-          fetch("/api/faculty"),
+        const [depRes] = await Promise.all([
           fetch("/api/department"),
         ])
-        const [facData, depData] = await Promise.all([facRes.json(), depRes.json()])
-        setFaculties(facData)
+        const [depData] = await Promise.all([depRes.json()])
         setDepartments(depData)
       } catch (err) {
-        console.error("Failed to fetch faculties or departments", err)
+        console.error("Failed to fetch  or departments", err)
       }
     }
 
@@ -204,30 +196,6 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="facultyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Faculty</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a faculty" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {faculties.map((f) => (
-                          <SelectItem key={f._id} value={f._id}>
-                            {f.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <FormField
                 control={form.control}

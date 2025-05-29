@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate request body
-    if (!body.courseName || !body.code || !body.semester || !body.facultyId || !body.departmentId) {
+    if (!body.courseName || !body.code || !body.semester  || !body.departmentId) {
       return NextResponse.json(
         {
           error: "Course name, code, semester, faculty ID, and department ID are required",
@@ -42,11 +42,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate IDs
-    if (!mongoose.Types.ObjectId.isValid(body.facultyId) || !mongoose.Types.ObjectId.isValid(body.departmentId)) {
+    if (!mongoose.Types.ObjectId.isValid(body.departmentId)) {
       return NextResponse.json({ error: "Invalid faculty or department ID" }, { status: 400 })
     }
 
-    // Check if faculty exists
 
     // Check if department exists
     const department = await Department.findById(body.departmentId)
@@ -65,13 +64,11 @@ export async function POST(request: NextRequest) {
       courseName: body.courseName,
       code: body.code,
       semester: body.semester,
-      facultyId: body.facultyId,
       departmentId: body.departmentId,
     })
 
     // Populate faculty and department information
     await course.populate([
-      { path: "facultyId", select: "name" },
       { path: "departmentId", select: "name" },
     ])
 
