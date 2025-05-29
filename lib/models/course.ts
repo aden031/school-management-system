@@ -23,6 +23,11 @@ const CourseSchema: Schema = new Schema(
       unique: true,
       trim: true,
     },
+    teacherId:{
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Teacher ID is required"],
+    },
     code: {
       type: String,
       required: [true, "Course code is required"],

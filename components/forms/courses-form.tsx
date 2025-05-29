@@ -36,6 +36,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const formSchema = z.object({
   departmentId: z.string().min(1, "Department is required"),
+  teacherId: z.string().min(1, "Teacher is required"), // Added teacherId field
   courseName: z.string().min(2, "Course name must be at least 2 characters"),
   code: z.string().min(2, "Course code must be at least 2 characters"),
   semester: z.coerce.number().min(1).max(8),
@@ -48,6 +49,7 @@ interface CoursesDialogProps {
   course?: {
     _id: string
     departmentId: string
+    teacherId: string // Added teacherId
     courseName: string
     code: string
     semester: number
@@ -59,11 +61,13 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [departments, setDepartments] = useState<any[]>([])
+  const [teachers, setTeachers] = useState<any[]>([]) // Added teachers state
 
   const form = useForm<CoursesFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       departmentId: "",
+      teacherId: "", // Added default value
       courseName: "",
       code: "",
       semester: 1,
@@ -75,6 +79,7 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
     if (open && (mode === "edit" || mode === "delete") && course) {
       form.reset({
         departmentId: course.departmentId,
+        teacherId: course.teacherId, // Added teacherId
         courseName: course.courseName,
         code: course.code,
         semester: course.semester,
@@ -82,6 +87,7 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
     } else if (open && mode === "add") {
       form.reset({
         departmentId: "",
+        teacherId: "", // Added teacherId
         courseName: "",
         code: "",
         semester: 1,
@@ -92,13 +98,18 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
   useEffect(() => {
     async function fetchOptions() {
       try {
-        const [depRes] = await Promise.all([
+        const [depRes, teachersRes] = await Promise.all([
           fetch("/api/department"),
+          fetch("/api/users/?title=teacher") // Fetch teachers only
         ])
-        const [depData] = await Promise.all([depRes.json()])
+        const [depData, teachersData] = await Promise.all([
+          depRes.json(),
+          teachersRes.json()
+        ])
         setDepartments(depData)
+        setTeachers(teachersData.filter(teacher => teacher.Title == "teacher"))
       } catch (err) {
-        console.error("Failed to fetch  or departments", err)
+        console.error("Failed to fetch departments or teachers", err)
       }
     }
 
@@ -111,10 +122,16 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
       const method = mode === "edit" ? "PUT" : "POST"
       const url = mode === "edit" ? `/api/courses/${course?.id}` : `/api/courses`
 
+      // Include teacherId in the request body
+      const body = JSON.stringify({
+        ...values,
+        teacherId: values.teacherId
+      })
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body
       })
 
       if (!res.ok) throw new Error("Request failed")
@@ -196,7 +213,6 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-
               <FormField
                 control={form.control}
                 name="departmentId"
@@ -213,6 +229,32 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
                         {departments.map((d) => (
                           <SelectItem key={d._id} value={d._id}>
                             {d.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Added Teacher Selection Field */}
+              <FormField
+                control={form.control}
+                name="teacherId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teacher</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a teacher" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {teachers.map((teacher) => (
+                          <SelectItem key={teacher._id} value={teacher._id}>
+                            {teacher.FullName}
                           </SelectItem>
                         ))}
                       </SelectContent>

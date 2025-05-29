@@ -3,6 +3,7 @@ import connectDB from "@/lib/db"
 import Course from "@/lib/models/course"
 import Department from "@/lib/models/department"
 import mongoose from "mongoose"
+import User from "@/lib/models/user"
 
 /**
  * GET /api/courses
@@ -12,6 +13,7 @@ export async function GET() {
   try {
     await connectDB()
     const courses = await Course.find({})
+      // .populate("teacherId", "FullName")
       .populate("departmentId", "name")
       .sort({ createdAt: -1 })
 
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Validate request body
-    if (!body.courseName || !body.code || !body.semester  || !body.departmentId) {
+    if (!body.courseName || !body.code || !body.semester  || !body.departmentId || !body.teacherId) {
       return NextResponse.json(
         {
           error: "Course name, code, semester, faculty ID, and department ID are required",
@@ -42,11 +44,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate IDs
-    if (!mongoose.Types.ObjectId.isValid(body.departmentId)) {
-      return NextResponse.json({ error: "Invalid faculty or department ID" }, { status: 400 })
+    if (!mongoose.Types.ObjectId.isValid(body.departmentId) || !mongoose.Types.ObjectId.isValid(body.teacherId)) {
+      return NextResponse.json({ error: "Invalid teacherId or department ID" }, { status: 400 })
     }
 
 
+    // Check if teacher exists
+    const teacher = await User.findById(body.teacherId)
+    if (!teacher) {
+      return NextResponse.json({ error: "teacher not found" }, { status: 404 })
+    }
     // Check if department exists
     const department = await Department.findById(body.departmentId)
     if (!department) {
@@ -63,6 +70,7 @@ export async function POST(request: NextRequest) {
     const course = await Course.create({
       courseName: body.courseName,
       code: body.code,
+      teacherId:body.teacherId,
       semester: body.semester,
       departmentId: body.departmentId,
     })

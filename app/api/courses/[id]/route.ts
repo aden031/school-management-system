@@ -3,6 +3,7 @@ import connectDB from "@/lib/db"
 import Course from "@/lib/models/course"
 import Department from "@/lib/models/department"
 import mongoose from "mongoose"
+import User from "@/lib/models/user"
 
 /**
  * GET /api/courses/:id - Get a single course with faculty + department info
@@ -42,18 +43,21 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const body = await request.json()
-    const { courseName, code, semester, facultyId, departmentId } = body
+    const { courseName, code, semester, departmentId , teacherId } = body
 
     // Validate related IDs if they're being updated
-    if (facultyId && !mongoose.Types.ObjectId.isValid(facultyId)) {
-      return NextResponse.json({ error: "Invalid faculty ID" }, { status: 400 })
-    }
-    if (departmentId && !mongoose.Types.ObjectId.isValid(departmentId)) {
-      return NextResponse.json({ error: "Invalid department ID" }, { status: 400 })
+    if (!mongoose.Types.ObjectId.isValid(departmentId) || !mongoose.Types.ObjectId.isValid(teacherId)) {
+      return NextResponse.json({ error: "Invalid department or teacherId ID" }, { status: 400 })
     }
 
     // Optional: check if referenced faculty/department exist
 
+    if (teacherId) {
+      const teacher = await User.findById(teacherId)
+      if (!teacher) {
+        return NextResponse.json({ error: "teacher not found" }, { status: 404 })
+      }
+    }
     if (departmentId) {
       const department = await Department.findById(departmentId)
       if (!department) {
@@ -63,11 +67,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const updated = await Course.findByIdAndUpdate(
       id,
-      { courseName, code, semester, facultyId, departmentId },
+      { courseName, code, semester ,teacherId ,departmentId },
       { new: true }
     )
-      .populate("facultyId", "name")
-      .populate("departmentId", "name")
+    .populate("departmentId", "name")
 
     if (!updated) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 })
