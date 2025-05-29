@@ -68,11 +68,11 @@ export function ClassesDataTable() {
     },
     {
       accessorKey: "departmentName",
-      header: "Department",
+      header: "Xarunta",
     },
     {
       accessorKey: "semesterName",
-      header: "Semester",
+      header: "Room #",
     },
     {
       accessorKey: "classMode",

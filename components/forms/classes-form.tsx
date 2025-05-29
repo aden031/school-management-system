@@ -34,7 +34,7 @@ import { Edit, PlusCircle, Trash2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const formSchema = z.object({
-  departmentId: z.string().min(1, { message: "Please select a department." }),
+  departmentId: z.string().min(1, { message: "Fadlan dooro xarun.!" }),
   semester: z.coerce.number().min(1).max(8),
   classMode: z.enum(["full time", "part time"]),
   type: z.string().min(1, { message: "Type is required." }),
@@ -136,7 +136,7 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "add" ? (
-          <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Class</Button>
+          <Button><PlusCircle className="mr-2 h-4 w-4" /> Samee Fasal Cusub</Button>
         ) : mode === "edit" ? (
           <Button variant="outline" size="icon"><Edit className="h-4 w-4" /></Button>
         ) : (
@@ -146,13 +146,13 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
 
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{mode === "add" ? "Add Class" : mode === "edit" ? "Edit Class" : "Delete Class"}</DialogTitle>
+          <DialogTitle>{mode === "add" ? "Kudar fasal" : mode === "edit" ? "Wax ka badal fasal" : "Delete gare fasal"}</DialogTitle>
           <DialogDescription>
             {mode === "add"
-              ? "Add a new class to the system."
+              ? "Ku dar fasal cusub systemka ."
               : mode === "edit"
-              ? "Make changes to the class information."
-              : "Are you sure you want to delete this class?"}
+              ? "Wax ka badal xogta fasalka ."
+              : "Ma hubtaa inaad delete gareneso fasalkan?"}
           </DialogDescription>
         </DialogHeader>
 
@@ -160,12 +160,12 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
           <>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Warning</AlertTitle>
-              <AlertDescription>This action cannot be undone.</AlertDescription>
+              <AlertTitle>Diginiin</AlertTitle>
+              <AlertDescription>Haddi falkan ad samesid lagama laaban karo.</AlertDescription>
             </Alert>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button variant="destructive" onClick={onDelete}>Delete</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>Ka laabo</Button>
+              <Button variant="destructive" onClick={onDelete}>Delete gareey</Button>
             </DialogFooter>
           </>
         ) : (
@@ -176,11 +176,11 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
                 name="departmentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Department</FormLabel>
+                    <FormLabel>Xarunta</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a department" />
+                          <SelectValue placeholder="Dooro xarunta" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -201,7 +201,7 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
                 name="semester"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Semester</FormLabel>
+                    <FormLabel>RooM #</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -219,7 +219,7 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a class mode" />
+                          <SelectValue placeholder="Dooro xilliga classka" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -239,7 +239,7 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
                   <FormItem>
                     <FormLabel>Type</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter class type (any text)" {...field} />
+                      <Input placeholder="Geli xarafka classka type (a , b , c)" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -269,7 +269,7 @@ export function ClassesDialog({ mode, classes, onDone }: ClassesDialogProps) {
               />
 
               <DialogFooter>
-                <Button type="submit">{mode === "add" ? "Add" : "Save changes"}</Button>
+                <Button type="submit">{mode === "add" ? "Kudar" : "Xaree isbedelka"}</Button>
               </DialogFooter>
             </form>
           </Form>
