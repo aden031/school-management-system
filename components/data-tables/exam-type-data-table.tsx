@@ -75,7 +75,7 @@ export function ExamTypeDataTable() {
     },
     {
       accessorKey: "name",
-      header: "Exam Type",
+      header: "Nuuca Imtixaanka",
       cell: ({ row }) => {
         const name = row.getValue("name") as string
         return (
@@ -96,11 +96,11 @@ export function ExamTypeDataTable() {
     },
     {
       accessorKey: "marks",
-      header: "Total Marks",
+      header: "Natiijada Guud",
     },
     {
       accessorKey: "description",
-      header: "Description",
+      header: "Faahfaahin",
     },
     {
       id: "actions",

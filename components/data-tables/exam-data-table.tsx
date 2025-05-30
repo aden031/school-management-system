@@ -73,15 +73,15 @@ export function ExamDataTable() {
   const columns: ColumnDef<Exam>[] = [
     {
       accessorKey: "studentName",
-      header: "Student",
+      header: "Ardayga",
     },
     {
       accessorKey: "courseName",
-      header: "Course",
+      header: "Maadada",
     },
     {
       accessorKey: "examTypeName",
-      header: "Exam Type",
+      header: "Nuuca imtixaanka",
       cell: ({ row }) => {
         const examType = row.getValue("examTypeName") as string
         const badgeVariant =
@@ -102,7 +102,7 @@ export function ExamDataTable() {
     },
     {
       accessorKey: "marksObtained",
-      header: "Marks Obtained",
+      header: "Natiijada",
       cell: ({ row }) => {
         const marksObtained = row.getValue("marksObtained") as number
         const totalMarks = row.original.totalMarks || 100

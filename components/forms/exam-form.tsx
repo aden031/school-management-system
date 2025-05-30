@@ -115,7 +115,7 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "add" ? (
-          <Button><PlusCircle className="mr-2 h-4 w-4" />Add Exam</Button>
+          <Button><PlusCircle className="mr-2 h-4 w-4" />Kudar Imtixaan</Button>
         ) : mode === "edit" ? (
           <Button variant="outline" size="icon"><Edit className="h-4 w-4" /></Button>
         ) : (
@@ -124,9 +124,9 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{mode === "add" ? "Add Exam" : mode === "edit" ? "Edit Exam" : "Delete Exam"}</DialogTitle>
+          <DialogTitle>{mode === "add" ? "Kudar Imtixaan" : mode === "edit" ? "Wax kabadal imtixaan" : "Deletegareey Imtixaan"}</DialogTitle>
           <DialogDescription>
-            {mode === "add" ? "Add a new exam record." : mode === "edit" ? "Update the exam record." : "Confirm deletion."}
+            {mode === "add" ? "Kudar natiijo imtixaan cusub." : mode === "edit" ? "Updategreey natiijada imtixaanka ." : "Xaqiiji deletegareynta."}
           </DialogDescription>
         </DialogHeader>
 
@@ -134,12 +134,12 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
           <>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Warning</AlertTitle>
-              <AlertDescription>This action is permanent.</AlertDescription>
+              <AlertTitle>Diginiin</AlertTitle>
+              <AlertDescription>Falkan dib loogama laaban karo Haddii uu dhaco.</AlertDescription>
             </Alert>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button variant="destructive" onClick={onDelete}>Delete</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>Ka laabo</Button>
+              <Button variant="destructive" onClick={onDelete}>Deletegarey</Button>
             </DialogFooter>
           </>
         ) : (
@@ -150,9 +150,9 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
                 name="studentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Student</FormLabel>
+                    <FormLabel>Aedayga</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger></FormControl>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Dooro Ardayga" /></SelectTrigger></FormControl>
                       <SelectContent>
                         {students.map((s) => (
                           <SelectItem key={s._id} value={s._id}>{s.name}</SelectItem>
@@ -168,9 +168,9 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
                 name="courseId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Course</FormLabel>
+                    <FormLabel>Maadada</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select course" /></SelectTrigger></FormControl>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Dooro Maadada" /></SelectTrigger></FormControl>
                       <SelectContent>
                         {courses.map((c) => (
                           <SelectItem key={c._id} value={c._id}>{c.courseName}</SelectItem>
@@ -186,9 +186,9 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
                 name="examTypeId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Exam Type</FormLabel>
+                    <FormLabel>Nuuca Imtixaanka</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select exam type" /></SelectTrigger></FormControl>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Dooro nuuca imtixaanka" /></SelectTrigger></FormControl>
                       <SelectContent>
                         {examTypes.map((t) => (
                           <SelectItem key={t._id} value={t._id}>{t.name} ({t.marks} marks)</SelectItem>
@@ -204,7 +204,7 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
                 name="marksObtained"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Marks Obtained</FormLabel>
+                    <FormLabel>Natiijada</FormLabel>
                     <FormControl>
                       <div className="flex gap-2 items-center">
                         <Input type="number" {...field} min={0} max={maxMarks} />
@@ -220,7 +220,7 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
                 name="date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel>Taariikhda</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -239,7 +239,7 @@ export function ExamDialog({ mode, exam, onDone }: ExamDialogProps) {
                 )}
               />
               <DialogFooter>
-                <Button type="submit">{mode === "add" ? "Add" : "Save changes"}</Button>
+                <Button type="submit">{mode === "add" ? "Kudar" : "Xareey is bedelka"}</Button>
               </DialogFooter>
             </form>
           </Form>

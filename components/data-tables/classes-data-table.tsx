@@ -127,7 +127,7 @@ export function ClassesDataTable() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Input
-          placeholder="Filter classes..."
+          placeholder="Raadi fasal..."
           value={(table.getColumn("departmentName")?.getFilterValue() as string) ?? ""}
           onChange={(e) => table.getColumn("departmentName")?.setFilterValue(e.target.value)}
           className="max-w-sm"

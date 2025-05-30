@@ -121,10 +121,10 @@ export function ExamTypeDialog({ mode, examType , onDone }: ExamTypeDialogProps)
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "add" ? (
-          <Button>
+            <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add Exam Type
-          </Button>
+            Ku dar Nooca Imtixaanka
+            </Button>
         ) : mode === "edit" ? (
           <Button variant="outline" size="icon">
             <Edit className="h-4 w-4" />
@@ -140,17 +140,17 @@ export function ExamTypeDialog({ mode, examType , onDone }: ExamTypeDialogProps)
         <DialogHeader>
           <DialogTitle>
             {mode === "add"
-              ? "Add Exam Type"
+              ? "Ku dar Nooca Imtixaanka"
               : mode === "edit"
-              ? "Edit Exam Type"
-              : "Delete Exam Type"}
+              ? "Tafatir Nooca Imtixaanka"
+              : "Tirtir Nooca Imtixaanka"}
           </DialogTitle>
           <DialogDescription>
             {mode === "add"
-              ? "Add a new exam type to the system."
+              ? "Ku dar nooc cusub oo imtixaan nidaamka."
               : mode === "edit"
-              ? "Make changes to the exam type."
-              : "Are you sure you want to delete this exam type?"}
+              ? "Wax ka beddel nooca imtixaanka."
+              : "Ma hubtaa inaad rabto inaad tirtirto noocan imtixaanka?"}
           </DialogDescription>
         </DialogHeader>
 
@@ -158,14 +158,14 @@ export function ExamTypeDialog({ mode, examType , onDone }: ExamTypeDialogProps)
           <>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Warning</AlertTitle>
-              <AlertDescription>
-                This action cannot be undone. It will permanently delete the exam type.
-              </AlertDescription>
+                <AlertTitle>Digniin</AlertTitle>
+                <AlertDescription>
+                Ficilkan lama beddeli karo. Waxay si joogto ah u tirtiri doontaa nooca imtixaanka.
+                </AlertDescription>
             </Alert>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-                Cancel
+                Kalaabo
               </Button>
               <Button variant="destructive" onClick={onDelete} disabled={loading}>
                 {loading ? "Deleting..." : "Delete"}
@@ -180,11 +180,11 @@ export function ExamTypeDialog({ mode, examType , onDone }: ExamTypeDialogProps)
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Exam Type</FormLabel>
+                    <FormLabel>Nuuca Imtixaanka</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select an exam type" />
+                          <SelectValue placeholder="Dooro Nuuca imtixaanka" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -203,7 +203,7 @@ export function ExamTypeDialog({ mode, examType , onDone }: ExamTypeDialogProps)
                 name="marks"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Total Marks</FormLabel>
+                    <FormLabel>Natiijada Guud</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="Enter total marks" {...field} />
                     </FormControl>
@@ -217,9 +217,9 @@ export function ExamTypeDialog({ mode, examType , onDone }: ExamTypeDialogProps)
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormLabel>Faahfaahin (Optional)</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Enter a description for this exam type" {...field} />
+                      <Textarea placeholder="Geli faahfaahin ku saabsan noocan imtixaanka" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -228,7 +228,11 @@ export function ExamTypeDialog({ mode, examType , onDone }: ExamTypeDialogProps)
 
               <DialogFooter>
                 <Button type="submit" disabled={loading}>
-                  {loading ? "Saving..." : mode === "add" ? "Add" : "Save changes"}
+                    {loading
+                    ? "Kaydinaya..."
+                    : mode === "add"
+                    ? "Ku dar"
+                    : "Kaydi isbeddelka"}
                 </Button>
               </DialogFooter>
             </form>
