@@ -146,10 +146,10 @@ export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "add" ? (
-          <Button>
+            <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add Fee
-          </Button>
+            Ku dar Lacag
+            </Button>
         ) : mode === "edit" ? (
           <Button variant="outline" size="icon">
             <Edit className="h-4 w-4" />
@@ -163,13 +163,19 @@ export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
 
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{mode === "add" ? "Add Fee" : mode === "edit" ? "Edit Fee" : "Delete Fee"}</DialogTitle>
+            <DialogTitle>
+            {mode === "add"
+              ? "Ku dar Lacag"
+              : mode === "edit"
+              ? "Tafatir Lacag"
+              : "Tirtir Lacag"}
+            </DialogTitle>
           <DialogDescription>
             {mode === "add"
-              ? "Add a new fee record."
+              ? "Ku dar diiwaan lacag cusub."
               : mode === "edit"
-                ? "Update the fee record."
-                : "Are you sure you want to delete this fee?"}
+              ? "Cusbooneysii diiwaanka lacagta."
+              : "Ma hubtaa inaad rabto inaad tirtirto diiwaankan lacagta?"}
           </DialogDescription>
         </DialogHeader>
 
@@ -177,12 +183,12 @@ export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
           <>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Warning</AlertTitle>
-              <AlertDescription>This action cannot be undone.</AlertDescription>
+                <AlertTitle>Digniin</AlertTitle>
+                <AlertDescription>Falkan lagama noqon karo dib dambe.</AlertDescription>
             </Alert>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                Kalaabo
               </Button>
               <Button variant="destructive" onClick={onDelete} disabled={loading}>
                 {loading ? "Deleting..." : "Delete"}
@@ -198,7 +204,7 @@ export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
                 name="studentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Student</FormLabel>
+                    <FormLabel>Ardayga</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -224,7 +230,7 @@ export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
                 name="financeType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Finance Type</FormLabel>
+                    <FormLabel>Nooca Maaliyadda</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -253,7 +259,7 @@ export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Total Amount</FormLabel>
+                        <FormLabel>Wadarta Lacagta</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} min={0} step="0.01" />
                       </FormControl>
@@ -266,7 +272,7 @@ export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
                   name="amountPaid"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Amount Paid</FormLabel>
+                        <FormLabel>Lacagta La Bixiyay</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} min={0} step="0.01" />
                       </FormControl>
@@ -279,7 +285,7 @@ export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
               {/* Balance and Status */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm font-medium mb-2">Balance</div>
+                    <div className="text-sm font-medium mb-2">Haraaga</div>
                   <div className="h-10 px-3 py-2 border rounded-md flex items-center">
                     <span className={balance <= 0 ? "text-green-600" : "text-red-600"}>
                       ${balance.toFixed(2)}
@@ -336,7 +342,11 @@ export function FeeDialog({ mode, fee , onDone }: FeeDialogProps) {
 
               <DialogFooter>
                 <Button type="submit" disabled={loading}>
-                  {loading ? "Saving..." : mode === "add" ? "Add" : "Save changes"}
+                    {loading
+                    ? "Wuu kaydinayaa..."
+                    : mode === "add"
+                    ? "Kudar"
+                    : "Kaydi isbedelada"}
                 </Button>
               </DialogFooter>
             </form>

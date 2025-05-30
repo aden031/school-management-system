@@ -90,18 +90,18 @@ export function FeeDataTable() {
   const columns: ColumnDef<Fee>[] = [
     {
       accessorKey: "studentName",
-      header: "Student",
+      header: "Ardayga",
     },
     {
       accessorKey: "financeType",
-      header: "Finance Type",
+      header: "Nooca Maaliyadda",
       cell: ({ row }) => (
         <span className="capitalize">{row.getValue("financeType") || "Unknown"}</span>
       ),
     },
     {
       accessorKey: "amount",
-      header: "Amount",
+      header: "Lacagta",
       cell: ({ row }) =>
         new Intl.NumberFormat("en-US", {
           style: "currency",
@@ -110,7 +110,7 @@ export function FeeDataTable() {
     },
     {
       accessorKey: "amountPaid",
-      header: "Amount Paid",
+      header: "Lacagta La Bixiyay",
       cell: ({ row }) =>
         new Intl.NumberFormat("en-US", {
           style: "currency",
@@ -119,7 +119,7 @@ export function FeeDataTable() {
     },
     {
       accessorKey: "balance",
-      header: "Balance",
+      header: "Haraaga",
       cell: ({ row }) =>
         new Intl.NumberFormat("en-US", {
           style: "currency",
@@ -128,7 +128,7 @@ export function FeeDataTable() {
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: "Xaaladda",
       cell: ({ row }) => {
         const status = row.getValue("status") as string
         const variant =
@@ -149,7 +149,7 @@ export function FeeDataTable() {
     },
     {
       accessorKey: "dueDate",
-      header: "Due Date",
+      header: "Wakhtiga Dhammaadka",
       cell: ({ row }) => {
         const dueDate = row.getValue("dueDate") as string
         const today = new Date()
@@ -159,7 +159,7 @@ export function FeeDataTable() {
         return (
           <div className={isPastDue ? "text-destructive font-medium" : ""}>
             {dueDate ? format(new Date(dueDate), "PPP") : "Unknown"}
-            {isPastDue && <span className="ml-2">(Overdue)</span>}
+            {isPastDue && <span className="ml-2">(Waqtigu Wuu Dhaafay)</span>}
           </div>
         )
       },
