@@ -160,10 +160,10 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {mode === "add" ? (
-          <Button>
+            <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add Course
-          </Button>
+            Ku dar Maadada
+            </Button>
         ) : mode === "edit" ? (
           <Button variant="outline" size="icon">
             <Edit className="h-4 w-4" />
@@ -178,12 +178,12 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {mode === "add" ? "Add Course" : mode === "edit" ? "Edit Course" : "Delete Course"}
+            {mode === "add" ? "Ku dar Maadada" : mode === "edit" ? "Tafatir Maadada" : "Tirtir Maadada"}
           </DialogTitle>
           <DialogDescription>
             {mode === "delete"
-              ? "This action is permanent and cannot be undone."
-              : "Fill in the details below."}
+              ? "Falkan waa mid joogto ah oo lama soo celin karo."
+              : "Fadlan buuxi faahfaahinta hoose."}
           </DialogDescription>
         </DialogHeader>
 
@@ -191,17 +191,17 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
           <>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Warning</AlertTitle>
-              <AlertDescription>
-                Are you sure you want to delete this course?
-              </AlertDescription>
+                <AlertTitle>Digniin</AlertTitle>
+                <AlertDescription>
+                Ma hubtaa inaad rabto inaad tirtirto maadadan?
+                </AlertDescription>
             </Alert>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                Ka laabo
               </Button>
               <Button variant="destructive" onClick={handleDelete} disabled={loading}>
-                Delete
+                Deletegareey
               </Button>
             </DialogFooter>
           </>
@@ -213,11 +213,11 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
                 name="departmentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Department</FormLabel>
+                    <FormLabel>Xarunta</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a department" />
+                          <SelectValue placeholder="Dooro Xarunta" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -239,11 +239,11 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
                 name="teacherId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Teacher</FormLabel>
+                    <FormLabel>Macalinka</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a teacher" />
+                          <SelectValue placeholder="Dooro Macalinka" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -264,9 +264,9 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
                 name="courseName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Course Name</FormLabel>
+                    <FormLabel>Magaca </FormLabel>
                     <FormControl>
-                      <Input placeholder="Course name" {...field} />
+                      <Input placeholder="Magaca maadada" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -276,7 +276,7 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
               
               <DialogFooter>
                 <Button type="submit" disabled={loading}>
-                  {mode === "edit" ? "Save Changes" : "Add Course"}
+                    {mode === "edit" ? "Kaydi Isbedelada" : "Ku dar Maadada"}
                 </Button>
               </DialogFooter>
             </form>

@@ -67,9 +67,9 @@ export function CoursesDataTable() {
   }, [])
 
   const columns: ColumnDef<Course>[] = [
-    { accessorKey: "courseName", header: "Course Name" },
-    { accessorKey: "departmentName", header: "Department" },
-    { accessorKey: "teacherName", header: "Teacher" }, // Updated to teacherName
+    { accessorKey: "courseName", header: "Magaca madada" },
+    { accessorKey: "departmentName", header: "Xarunta" },
+    { accessorKey: "teacherName", header: "Macallinka" },
     {
       id: "actions",
       cell: ({ row }) => {
@@ -100,12 +100,14 @@ export function CoursesDataTable() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Input
-          placeholder="Filter courses..."
+          placeholder="Raadi Maadooyin..."
           value={(table.getColumn("courseName")?.getFilterValue() as string) ?? ""}
           onChange={(e) => table.getColumn("courseName")?.setFilterValue(e.target.value)}
           className="max-w-sm"
         />
-        <CoursesDialog mode="add" onSuccess={fetchCourses} />
+        <CoursesDialog mode="add" onSuccess={fetchCourses}>
+          Ku dar Koorso
+        </CoursesDialog>
       </div>
 
       <div className="rounded-md border">
@@ -141,7 +143,7 @@ export function CoursesDataTable() {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  LaMa helin wax  natiijo ah.
                 </TableCell>
               </TableRow>
             )}
