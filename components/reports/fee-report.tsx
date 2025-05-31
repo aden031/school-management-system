@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,10 +13,62 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Download, PrinterIcon as Print, DollarSign, CalendarIcon, Filter } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import { feeData, students, classes } from "@/data"
+
+interface Fee {
+  _id: string
+  studentId: {
+    _id: string
+    name: string
+  }
+  financeType: string
+  amount: number
+  amountPaid: number
+  balance: number
+  status: "paid" | "partial" | "unpaid"
+  description: string
+  date: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface Student {
+  _id: string
+  classId: {
+    _id: string
+    departmentId: {
+      _id: string
+      name: string
+    }
+    semester: number
+    classMode: string
+    type: string
+  }
+  name: string
+  gender: string
+  parentPhone: string
+  phone: string
+  studentId: number
+  status: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface Class {
+  _id: string
+  departmentId: {
+    _id: string
+    name: string
+  }
+  semester: number
+  classMode: string
+  type: string
+  status: string
+  createdAt: string
+  updatedAt: string
+}
 
 interface FeeReportData {
-  fees: any[]
+  fees: Fee[]
   summary: {
     totalAmount: number
     totalPaid: number
@@ -35,24 +87,56 @@ export function FeeReport() {
   const [selectedClass, setSelectedClass] = useState("")
   const [reportData, setReportData] = useState<FeeReportData | null>(null)
   const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [fees, setFees] = useState<Fee[]>([])
+  const [students, setStudents] = useState<Student[]>([])
+  const [classes, setClasses] = useState<Class[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [feesRes, studentsRes, classesRes] = await Promise.all([
+          fetch("/api/fees"),
+          fetch("/api/student"),
+          fetch("/api/classes")
+        ])
+        
+        const [feesData, studentsData, classesData] = await Promise.all([
+          feesRes.json(),
+          studentsRes.json(),
+          classesRes.json()
+        ])
+        
+        setFees(feesData)
+        setStudents(studentsData)
+        setClasses(classesData)
+      } catch (error) {
+        console.error("Failed to fetch data", error)
+      } finally {
+        setInitialLoading(false)
+      }
+    }
+    
+    fetchData()
+  }, [])
 
   const generateReport = () => {
     setLoading(true)
 
     setTimeout(() => {
-      let filteredFees = [...feeData]
+      let filteredFees = [...fees]
 
       if (filterType === "dateRange" && startDate && endDate) {
         filteredFees = filteredFees.filter((fee) => {
-          const feeDate = new Date(fee.dueDate)
+          const feeDate = new Date(fee.date)
           return feeDate >= startDate && feeDate <= endDate
         })
       } else if (filterType === "student" && selectedStudent) {
-        filteredFees = filteredFees.filter((fee) => fee.studentId === selectedStudent)
+        filteredFees = filteredFees.filter((fee) => fee.studentId._id === selectedStudent)
       } else if (filterType === "class" && selectedClass) {
-        const classStudents = students.filter((s) => s.classId === selectedClass)
-        const studentIds = classStudents.map((s) => s.id)
-        filteredFees = filteredFees.filter((fee) => studentIds.includes(fee.studentId))
+        const classStudents = students.filter((s) => s.classId._id === selectedClass)
+        const studentIds = classStudents.map((s) => s._id)
+        filteredFees = filteredFees.filter((fee) => studentIds.includes(fee.studentId._id))
       }
 
       // Calculate summary
@@ -86,14 +170,24 @@ export function FeeReport() {
     console.log("Download report")
   }
 
-  const getStudentName = (studentId: string) => {
-    return students.find((s) => s.id === studentId)?.name || "Unknown"
+  const formatClassName = (cls: Class) => {
+    return `${cls.departmentId.name} - Semester ${cls.semester} ${cls.classMode} ${cls.type}`
   }
 
   const getClassName = (studentId: string) => {
-    const student = students.find((s) => s.id === studentId)
+    const student = students.find((s) => s._id === studentId)
     if (!student) return "Unknown"
-    return classes.find((c) => c.id === student.classId)?.name || "Unknown"
+    
+    const cls = classes.find((c) => c._id === student.classId._id)
+    return cls ? formatClassName(cls) : "Unknown"
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p>Loading data...</p>
+      </div>
+    )
   }
 
   return (
@@ -115,14 +209,14 @@ export function FeeReport() {
                 <RadioGroupItem value="dateRange" id="dateRange" />
                 <Label htmlFor="dateRange">Date Range</Label>
               </div>
-              <div className="flex items-center space-x-2">
+              {/* <div className="flex items-center space-x-2">
                 <RadioGroupItem value="student" id="student" />
                 <Label htmlFor="student">Student</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="class" id="class" />
                 <Label htmlFor="class">Class</Label>
-              </div>
+              </div> */}
             </RadioGroup>
           </div>
 
@@ -177,7 +271,7 @@ export function FeeReport() {
                 </SelectTrigger>
                 <SelectContent>
                   {students.map((student) => (
-                    <SelectItem key={student.id} value={student.id}>
+                    <SelectItem key={student._id} value={student._id}>
                       {student.name} ({student.studentId})
                     </SelectItem>
                   ))}
@@ -195,8 +289,8 @@ export function FeeReport() {
                 </SelectTrigger>
                 <SelectContent>
                   {classes.map((cls) => (
-                    <SelectItem key={cls.id} value={cls.id}>
-                      {cls.name}
+                    <SelectItem key={cls._id} value={cls._id}>
+                      {formatClassName(cls)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -219,7 +313,7 @@ export function FeeReport() {
               <h2 className="text-xl font-semibold">Fee Report</h2>
               <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
             </div>
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handlePrint}>
                 <Print className="h-4 w-4 mr-2" />
                 Print
@@ -228,7 +322,7 @@ export function FeeReport() {
                 <Download className="h-4 w-4 mr-2" />
                 Download
               </Button>
-            </div>
+            </div> */}
           </div>
 
           {/* Summary Cards */}
@@ -308,14 +402,14 @@ export function FeeReport() {
                       <TableHead>Paid</TableHead>
                       <TableHead>Balance</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Due Date</TableHead>
+                      <TableHead>Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {reportData.fees.map((fee) => (
-                      <TableRow key={fee.id}>
-                        <TableCell>{getStudentName(fee.studentId)}</TableCell>
-                        <TableCell>{getClassName(fee.studentId)}</TableCell>
+                      <TableRow key={fee._id}>
+                        <TableCell>{fee.studentId && fee.studentId.name ? fee.studentId.name : "Unknown"}</TableCell>
+                        <TableCell>{getClassName(fee.studentId._id)}</TableCell>
                         <TableCell className="capitalize">{fee.financeType}</TableCell>
                         <TableCell>${fee.amount}</TableCell>
                         <TableCell>${fee.amountPaid}</TableCell>
@@ -329,7 +423,7 @@ export function FeeReport() {
                             {fee.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>{new Date(fee.dueDate).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(fee.date).toLocaleDateString()}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

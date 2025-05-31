@@ -132,7 +132,7 @@ export function StudentReport() {
               <h2 className="text-xl font-semibold">Student Report</h2>
               <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
             </div>
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handlePrint}>
                 <Print className="h-4 w-4 mr-2" />
                 Print
@@ -141,7 +141,7 @@ export function StudentReport() {
                 <Download className="h-4 w-4 mr-2" />
                 Download
               </Button>
-            </div>
+            </div> */}
           </div>
 
           {/* Student Details */}
