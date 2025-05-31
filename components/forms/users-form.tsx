@@ -22,20 +22,30 @@ import type { User } from "@/components/data-tables/users-data-table"
 import { Edit, PlusCircle, Trash2, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
+// Password validation regex and error message
+const strongPasswordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+const passwordErrorMsg = "Password must be at least 8 characters long and include at least one letter, one number, and one symbol.";
+
 // Separate schemas
-const addUserSchema = z.object({
+const baseUserSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
   email: z.string().email("Please enter a valid email address."),
-  password: z.string().min(6, "Password must be at least 6 characters."),
   title: z.enum(["dean", "teacher", "officer"]),
   status: z.enum(["active", "inactive"]),
-})
+});
 
-const editUserSchema = addUserSchema.extend({
-  password: z.string().optional().or(z.literal("")),
-})
+const addUserSchema = baseUserSchema.extend({
+  password: z.string().regex(strongPasswordRegex, passwordErrorMsg),
+});
 
-type UsersFormValues = z.infer<typeof addUserSchema>
+const editUserSchema = baseUserSchema.extend({
+  password: z.string().optional().or(z.literal('')).refine(
+    password => !password || strongPasswordRegex.test(password),
+    { message: passwordErrorMsg }
+  ),
+});
+
+type UsersFormValues = z.infer<typeof addUserSchema> | z.infer<typeof editUserSchema>;
 
 interface UsersDialogProps {
   mode: "add" | "edit" | "delete"
