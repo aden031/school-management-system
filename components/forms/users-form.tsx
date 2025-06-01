@@ -26,12 +26,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 const strongPasswordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
 const passwordErrorMsg = "Password must be at least 8 characters long and include at least one letter, one number, and one symbol.";
 
+// Phone validation regex and error message
+const phoneRegex = /^\?[1-9]\d{1,14}$/; // E.164 format (supports international numbers)
+const phoneErrorMsg = "Please enter a valid phone number including country code (e.g., +12345678901)";
+
 // Separate schemas
 const baseUserSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters."),
-  email: z.string().email("Please enter a valid email address."),
-  title: z.enum(["dean", "teacher", "officer"]),
-  status: z.enum(["active", "inactive"]),
+  fullName: z.string(),
+  email: z.string(),
+  phone: z.string().regex(/^[0-9]+$/, "Phone number must contain only digits."),
+  title: z.string(),
+  status: z.string(),
 });
 
 const addUserSchema = baseUserSchema.extend({
@@ -61,8 +66,9 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
   const defaultValues: Partial<UsersFormValues> = {
     fullName: user?.fullName || "",
     email: user?.email || "",
+    phone: user?.phone || "",
     password: "",
-    title: user?.title || "dean",
+    title: user?.title || "teacher",
     status: user?.status || "active",
   }
 
@@ -82,8 +88,9 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
       const payload: any = {
         FullName: data.fullName,
         Email: data.email,
+        phone: data.phone,
         Title: data.title,
-        Status: data.status,
+        status: data.status,
       }
 
       // Only send password if it exists or in add mode
@@ -204,6 +211,24 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
 
               <FormField
                 control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="+12345678901" 
+                        type="tel"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
@@ -243,8 +268,8 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="dean">Dean</SelectItem>
                         <SelectItem value="teacher">Teacher</SelectItem>
+                        <SelectItem value="parent">Parent</SelectItem>
                         <SelectItem value="officer">Officer</SelectItem>
                       </SelectContent>
                     </Select>

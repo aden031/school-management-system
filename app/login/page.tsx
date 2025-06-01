@@ -6,13 +6,17 @@ import { LoginForm } from "@/components/auth/login-form"
 import { useAuth } from "@/components/auth/auth-context"
 
 export default function LoginPage() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated , user} = useAuth()
   const router = useRouter()
 
   useEffect(() => {
     // If already authenticated, redirect to dashboard
     if (isAuthenticated) {
-      router.push("/")
+      if (user?.role === "parent") {
+        router.push("/parent")
+      } else {
+        router.push("/")
+      }
     }
   }, [isAuthenticated, router])
 

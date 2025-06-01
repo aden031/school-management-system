@@ -4,7 +4,7 @@ import User from "@/lib/models/user"
 import connectToDatabase from "@/lib/db"
 import mongoose from "mongoose"
 
-const allowedTitles = ["dean", "teacher", "officer"]
+const allowedTitles = ["parent", "teacher", "officer"]
 const allowedStatus = ["active", "inactive"]
 
 export async function GET(request: Request) {
@@ -37,9 +37,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { FullName, Email, password, Title, Status } = await request.json()
+    const { FullName, Email, password, phone,  Title, Status } = await request.json()
 
-    if (!FullName || !Email || !password) {
+    if (!FullName || !Email || !password || !phone) {
       return NextResponse.json({ error: "Name, email and password required" }, { status: 400 })
     }
 
@@ -67,6 +67,7 @@ export async function POST(request: Request) {
       FullName,
       Email,
       password: hashed,
+      phone,
       Title: Title || "teacher",
       Status: Status || "active",
     })

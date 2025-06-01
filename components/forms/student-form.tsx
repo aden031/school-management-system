@@ -23,7 +23,7 @@ const API_BASE = "/api/student"
 const formSchema = z.object({
   classId: z.string().optional(),
   name: z.string().min(2, "Name must be at least 2 characters.").optional(),
-  parentPhone: z.string().min(10, "Phone must be at least 10 digits.").optional(),
+  parentPhone: z.string().regex(/^[0-9]+$/, "Phone number must contain only digits."),
   studentId: z.string().optional(), // handle conversion later
   status: z.enum(["active", "inactive"]).optional(),
 })

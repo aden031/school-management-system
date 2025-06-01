@@ -7,7 +7,7 @@ const UserSchema = new Schema(
     password: { type: String, required: true },
     Title: {
       type: String,
-      enum: ['dean', 'teacher', 'officer'], // ✅ only these 3
+      enum: ['parent', 'teacher', 'officer'], // ✅ only these 3
       default: 'teacher',
     },
     Status: {
@@ -15,6 +15,10 @@ const UserSchema = new Schema(
       enum: ['active', 'inactive'], // ✅ only these 2
       default: 'active',
     },
+    phone:{
+      type:Number , 
+      required:[true , "please provide user phone !"]
+    }
   },
   { timestamps: true }
 )
