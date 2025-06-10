@@ -515,7 +515,7 @@ export function StudentReport() {
                             className="print:bg-transparent print:border print:border-gray-300 print:text-gray-800"
                           >
                             {fee.status}
-                          </Badge>
+   \                       </Badge>
                         </TableCell>
                         <TableCell>{new Date(fee.dueDate).toLocaleDateString()}</TableCell>
                       </TableRow>

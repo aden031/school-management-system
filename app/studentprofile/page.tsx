@@ -11,6 +11,7 @@ import { Search, Download, PrinterIcon as Print, User, Calendar, FileText, Dolla
 import { classes, courses, examTypes } from "@/data"
 import { useAuth } from "@/components/auth/auth-context"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Student {
   _id: string
@@ -26,7 +27,7 @@ interface Student {
 interface StudentReportData {
   student: {
     _id: string
-    classId: { _id: string }
+    classId: { _id: string; name?: string }
     name: string
     gender: string
     parentPhone: string
@@ -59,41 +60,23 @@ interface StudentReportData {
 }
 
 export default function StudentReportPage() {
-  const { user , logout } = useAuth();
-  const [students, setStudents] = useState<Student[]>([])
-  const [selectedStudentId, setSelectedStudentId] = useState("")
+  const { user, logout } = useAuth();
   const [reportData, setReportData] = useState<StudentReportData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [loadingStudents, setLoadingStudents] = useState(true)
+  const [loading, setLoading] = useState(true)
 
-  // Fetch students based on parent's phone number
   useEffect(() => {
-    if (user?.phone) {
-      setLoadingStudents(true)
-      fetch(`/api/student/parent/${user.phone}`)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to fetch students")
-          return res.json()
-        })
-        .then(data => {
-          setStudents(data)
-          setLoadingStudents(false)
-        })
-        .catch(error => {
-          console.error("Error fetching students:", error)
-          setLoadingStudents(false)
-        })
+    if (user?.studentId) {
+      fetchReport()
+    } else {
+      setLoading(false)
     }
   }, [user])
 
-  const generateReport = async () => {
-    if (!selectedStudentId) return
-
+  const fetchReport = async () => {
     setLoading(true)
-
     try {
-      const response = await fetch(`/api/reports/student-report/${selectedStudentId}`)
-      if (!response.ok) throw new Error("Failed to generate report")
+      const response = await fetch(`/api/reports/student-report/${user?.studentId}`)
+      if (!response.ok) throw new Error("Failed to fetch report")
       const data = await response.json()
       setReportData(data)
     } catch (error) {
@@ -105,34 +88,23 @@ export default function StudentReportPage() {
   }
 
   const getClassName = (classId: string) => 
-    classes.find(c => c.id === classId)?.name || "Unknown Class"
+    classes.find(c => c.id === classId)?.name || classId
 
   const getCourseName = (courseId: string) => 
-    courses.find(c => c.id === courseId)?.name || "Unknown Course"
+    courses.find(c => c.id === courseId)?.name || courseId
 
   const getExamTypeName = (examTypeId: string) => 
-    examTypes.find(et => et.id === examTypeId)?.name || "Unknown Exam"
-
-  // Clear report when student selection changes
-  useEffect(() => {
-    if (selectedStudentId) {
-      setReportData(null)
-    }
-  }, [selectedStudentId])
+    examTypes.find(et => et.id === examTypeId)?.name || examTypeId
 
   return (
     <div className="space-y-6 p-6">
-                <div className="titHead flex flex-wrap justify-between">
-                <p>Welcome Mr/Ms, {user?.fullname}</p>
-              <Button 
-                onClick={logout}
-                className="w-full md:w-auto"
-              >
-                Logout
-              </Button>
-            </div>
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+        <h1 className="text-2xl font-bold">Student Report Dashboard</h1>
+        <Button onClick={logout} variant="outline">
+          Logout
+        </Button>
+      </div>
 
-      {/* Student Selection Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -140,89 +112,139 @@ export default function StudentReportPage() {
             Student Report
           </CardTitle>
           <CardDescription>
-            {students.length > 0 
-              ? "Select a student to generate their report" 
-              : "No students found for your account"}
+            {user?.studentId 
+              ? "View your academic and attendance report" 
+              : "No student associated with your account"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 space-y-2">
-              <Label htmlFor="student-select">Select Student</Label>
-              
-              {loadingStudents ? (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <div className="h-4 w-4 border-2 border-t-primary rounded-full animate-spin"></div>
-                  Loading students...
+          {loading ? (
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+              <div className="flex items-center gap-4 w-full">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-40" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-20" />
+                  </div>
                 </div>
-              ) : students.length === 0 ? (
-                <p className="text-sm text-muted-foreground italic">
-                  No students associated with your phone number
-                </p>
-              ) : (
-                <Select 
-                  value={selectedStudentId} 
-                  onValueChange={setSelectedStudentId}
-                >
-                  <SelectTrigger id="student-select">
-                    <SelectValue placeholder="Select a student" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {students.map(student => (
-                      <SelectItem key={student._id} value={student._id}>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{student.name}</span>
-                          <Badge variant="secondary">ID: {student.studentId}</Badge>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              </div>
+              <Skeleton className="h-10 w-40 mt-4 md:mt-0" />
             </div>
-            
-            <div className="flex items-end">
+          ) : user?.studentId ? (
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+              {reportData?.student ? (
+                <div className="flex items-center gap-4">
+                  <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-full">
+                    <User className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium">{reportData.student.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary">ID: {reportData.student.studentId}</Badge>
+                      <Badge variant={reportData.student.status === "active" ? "default" : "destructive"}>
+                        {reportData.student.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4">
+                  <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-full">
+                    <User className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium">Your Student Profile</h3>
+                    <p className="text-sm text-muted-foreground">Generate report to view details</p>
+                  </div>
+                </div>
+              )}
+              
               <Button 
-                onClick={generateReport}
-                disabled={loading || !selectedStudentId || students.length === 0}
-                className="w-full md:w-auto"
+                onClick={fetchReport}
+                disabled={loading}
+                className="w-full md:w-auto mt-4 md:mt-0"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-t-white rounded-full animate-spin"></div>
-                    Generating...
+                    {reportData ? "Refreshing..." : "Generating..."}
                   </span>
-                ) : "Generate Report"}
+                ) : reportData ? "Refresh Report" : "Generate Report"}
               </Button>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-6">
+              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <User className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground">
+                Your account is not associated with any student record.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Contact administration for assistance
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Report Display */}
-      {reportData && (
+      {loading && !reportData ? (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {[...Array(4)].map((_, i) => (
+                  <Skeleton key={i} className="h-24 rounded-lg" />
+                ))}
+              </div>
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-12 rounded-lg" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-16 rounded-lg" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : reportData ? (
         <div className="space-y-6 print:space-y-4">
-          {/* Report Header */}
           <div className="flex justify-between items-start print:hidden">
             <div>
               <h2 className="text-xl font-semibold">Student Report</h2>
               <p className="text-muted-foreground">
-                Generated on {new Date().toLocaleDateString()}
+                Generated on {new Date().toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
               </p>
             </div>
             <div className="flex gap-2">
-              {/* <Button variant="outline" size="sm" onClick={() => window.print()}>
-                <Print className="h-4 w-4 mr-2" />
-                Print
+              <Button variant="outline" size="icon">
+                <Download className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={() => console.log("Download report")}>
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button> */}
+              <Button variant="outline" size="icon">
+                <Print className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
-          {/* Student Details Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -242,7 +264,7 @@ export default function StudentReportPage() {
                 </div>
                 <div>
                   <Label className="text-sm text-muted-foreground">Parent Phone</Label>
-                  <p className="font-medium">{reportData.student.parentPhone}</p>
+                  <p className="font-medium">{reportData.student.parentPhone || 'N/A'}</p>
                 </div>
                 <div>
                   <Label className="text-sm text-muted-foreground">Class</Label>
@@ -264,7 +286,6 @@ export default function StudentReportPage() {
             </CardContent>
           </Card>
 
-          {/* Attendance Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -274,26 +295,26 @@ export default function StudentReportPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">
+                <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-300">
                     {reportData.attendanceStats.totalDays}
                   </div>
                   <div className="text-sm text-muted-foreground">Total Days</div>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
+                <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-300">
                     {reportData.attendanceStats.presentDays}
                   </div>
                   <div className="text-sm text-muted-foreground">Present</div>
                 </div>
-                <div className="text-center p-4 bg-red-50 rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">
+                <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-300">
                     {reportData.attendanceStats.absentDays}
                   </div>
                   <div className="text-sm text-muted-foreground">Absent</div>
                 </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">
+                <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-300">
                     {reportData.attendanceStats.percentage}%
                   </div>
                   <div className="text-sm text-muted-foreground">Attendance Rate</div>
@@ -303,9 +324,9 @@ export default function StudentReportPage() {
               {reportData.attendanceHistory.length > 0 ? (
                 <>
                   <h4 className="font-medium mb-3">Recent Attendance Records</h4>
-                  <div className="border rounded-lg">
+                  <div className="border rounded-lg overflow-hidden">
                     <Table>
-                      <TableHeader className="bg-gray-50">
+                      <TableHeader className="bg-gray-50 dark:bg-gray-800">
                         <TableRow>
                           <TableHead>Date</TableHead>
                           <TableHead>Course</TableHead>
@@ -324,7 +345,7 @@ export default function StudentReportPage() {
                             <TableCell className="text-right">
                               <Badge 
                                 variant={record.isPresent ? "default" : "destructive"}
-                                className="justify-end"
+                                className="justify-end min-w-[70px]"
                               >
                                 {record.isPresent ? "Present" : "Absent"}
                               </Badge>
@@ -336,14 +357,17 @@ export default function StudentReportPage() {
                   </div>
                 </>
               ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  No attendance records available
-                </p>
+                <div className="text-center py-8 border rounded-lg">
+                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h4 className="text-lg font-medium">No Attendance Records</h4>
+                  <p className="text-muted-foreground mt-2">
+                    No attendance data available for this student
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Exam History Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -353,9 +377,9 @@ export default function StudentReportPage() {
             </CardHeader>
             <CardContent>
               {reportData.examHistory.length > 0 ? (
-                <div className="border rounded-lg">
+                <div className="border rounded-lg overflow-hidden">
                   <Table>
-                    <TableHeader className="bg-gray-50">
+                    <TableHeader className="bg-gray-50 dark:bg-gray-800">
                       <TableRow>
                         <TableHead>Date</TableHead>
                         <TableHead>Course</TableHead>
@@ -398,14 +422,17 @@ export default function StudentReportPage() {
                   </Table>
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  No exam records available
-                </p>
+                <div className="text-center py-8 border rounded-lg">
+                  <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h4 className="text-lg font-medium">No Exam Records</h4>
+                  <p className="text-muted-foreground mt-2">
+                    No exam data available for this student
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Fee History Card */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -415,9 +442,9 @@ export default function StudentReportPage() {
             </CardHeader>
             <CardContent>
               {reportData.feeHistory.length > 0 ? (
-                <div className="border rounded-lg">
+                <div className="border rounded-lg overflow-hidden">
                   <Table>
-                    <TableHeader className="bg-gray-50">
+                    <TableHeader className="bg-gray-50 dark:bg-gray-800">
                       <TableRow>
                         <TableHead>Type</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
@@ -431,9 +458,9 @@ export default function StudentReportPage() {
                       {reportData.feeHistory.map(fee => (
                         <TableRow key={fee._id}>
                           <TableCell className="capitalize">{fee.financeType}</TableCell>
-                          <TableCell className="text-right">${fee.amount}</TableCell>
-                          <TableCell className="text-right">${fee.amountPaid}</TableCell>
-                          <TableCell className="text-right">${fee.balance}</TableCell>
+                          <TableCell className="text-right">${fee.amount.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">${fee.amountPaid.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">${fee.balance.toFixed(2)}</TableCell>
                           <TableCell>
                             <Badge
                               variant={
@@ -454,45 +481,37 @@ export default function StudentReportPage() {
                   </Table>
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  No fee records available
-                </p>
+                <div className="text-center py-8 border rounded-lg">
+                  <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h4 className="text-lg font-medium">No Fee Records</h4>
+                  <p className="text-muted-foreground mt-2">
+                    No fee data available for this student
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
         </div>
-      )}
-
-      {/* Empty States */}
-      {!reportData && selectedStudentId && !loading && (
+      ) : user?.studentId && !loading ? (
         <Card>
           <CardContent className="text-center py-12">
             <div className="text-muted-foreground flex flex-col items-center">
               <FileText className="h-12 w-12 mb-4 opacity-50" />
               <h3 className="text-lg font-medium">No Report Data Available</h3>
               <p className="mt-2 max-w-md">
-                We couldn't find any report data for the selected student. 
-                Try generating the report again or contact support.
+                We couldn't find any report data for your account. 
+                Try generating the report or contact support.
               </p>
+              <Button 
+                onClick={fetchReport}
+                className="mt-4"
+              >
+                Generate Report
+              </Button>
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {students.length === 0 && !loadingStudents && (
-        <Card>
-          <CardContent className="text-center py-12">
-            <div className="text-muted-foreground flex flex-col items-center">
-              <User className="h-12 w-12 mb-4 opacity-50" />
-              <h3 className="text-lg font-medium">No Students Found</h3>
-              <p className="mt-2 max-w-md">
-                Your account ({user?.phone}) is not associated with any students.
-                Please contact the school administration if this is incorrect.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      ) : null}
     </div>
   )
 }

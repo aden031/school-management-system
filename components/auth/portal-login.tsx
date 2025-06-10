@@ -43,7 +43,7 @@ export function PortalLogin() {
       const success = await login("" ,  data.password ,data.studentId)
 
       if (success) {
-        router.push("/")
+        router.push("/studentprofile")
       } else {
         setError("Invalid student ID or password")
       }

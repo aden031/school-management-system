@@ -11,7 +11,7 @@ interface AuthContextType {
   logout: () => void
 }
 
-type Role = "parent" | "teacher" | "officer"
+type Role = "parent" | "teacher" | "officer" | "student"
 
 interface User {
   email: string

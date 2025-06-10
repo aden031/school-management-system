@@ -68,8 +68,8 @@ export function DepartmentDataTable() {
       cell: ({ row }) => row.original?.name ?? "Unknown",
     },
     {
-      header: "Student Count",
-      cell: ({ row }) => row.original?.studentCount ?? "Unknown",
+      header: "departmentMode",
+      cell: ({ row }) => row.original?.departmentMode ?? "CMS",
     },
     {
       id: "actions",

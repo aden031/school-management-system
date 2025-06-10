@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "./auth-context"
+import Link from "next/link"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -72,6 +73,7 @@ export function LoginForm() {
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
+
           <Alert variant="destructive" className="mb-4">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
@@ -127,7 +129,10 @@ export function LoginForm() {
         </Form>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center flex flex-col text-sm text-muted-foreground">
+                <Link href="/studentportal" className="text-primary underline font-medium">
+                Student portal login
+                </Link>
             <span>Use your actual credentials to log in. If you don't have an account, please contact the administrator.</span>
         </div>
       </CardFooter>
