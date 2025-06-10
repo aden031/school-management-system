@@ -35,7 +35,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const formSchema = z.object({
   departmentId: z.string().min(1, { message: "Fadlan dooro xarun.!" }),
-  semester: z.coerce.number().min(1).max(8),
+  semester: z.coerce.number().min(1).max(12),
   classMode: z.enum(["full time", "part time"]),
   type: z.string().min(1, { message: "Type is required." }),
   status: z.enum(["active", "inactive"]),
