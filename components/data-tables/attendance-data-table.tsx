@@ -222,8 +222,8 @@ function AttendanceDialog({
                         {classes.map(cls => (
                           <SelectItem key={cls._id} value={cls._id}>
                             {cls.departmentId?.name
-                              ? `${cls.departmentId.name} - Semester ${cls.semester}`
-                              : `Unknown Department - Semester ${cls.semester}`}
+                              ? `${cls.departmentId.name} - class ${cls.semester}`
+                              : `Unknown Department - class ${cls.semester}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -417,7 +417,7 @@ export function AttendanceDataTable() {
         studentName: att.studentId?.name ?? "Unknown Student",
         classId: att.classId?._id ?? "",
         className: classObj
-          ? `${classObj.departmentId.name} - Semester ${classObj.semester}`
+          ? `${classObj.departmentId.name} - class ${classObj.semester}`
           : "Unknown Class",
         courseId: att.courseId?._id ?? "",
         courseName: att.courseId?.courseName ?? "Unknown Course",

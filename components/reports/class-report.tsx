@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Download, PrinterIcon as Print, Users, Calendar, FileText, DollarSign } from "lucide-react"
+import * as XLSX from "xlsx" // Import Excel library
 
 interface ClassReportData {
   class: {
@@ -99,8 +100,96 @@ export function ClassReport() {
     }
   }
 
-  const handlePrint = () => window.print()
-  const handleDownload = () => console.log("Download report")
+  const handlePrint = () => {
+    const printContent = document.getElementById("report-content")?.innerHTML;
+    const originalContent = document.body.innerHTML;
+    
+    if (printContent) {
+      document.body.innerHTML = printContent;
+      window.print();
+      document.body.innerHTML = originalContent;
+      window.location.reload();
+    } else {
+      window.print();
+    }
+  }
+
+  const handleDownload = () => {
+    if (!reportData) {
+      alert("No report data to download");
+      return;
+    }
+
+    try {
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Create overview sheet
+      const overviewData = [
+        ["Class Report", getClassName(selectedClass)],
+        ["Generated On", new Date().toLocaleDateString()],
+        [],
+        ["Statistics", "Value"],
+        ["Total Students", reportData.attendanceStats.totalStudents],
+        ["Average Attendance", `${reportData.attendanceStats.averageAttendance}%`],
+        ["Present Today", reportData.attendanceStats.presentToday],
+        ["Absent Today", reportData.attendanceStats.absentToday],
+        ["Average Marks", reportData.examStats.averageMarks],
+        ["Highest Marks", reportData.examStats.highestMarks],
+        ["Lowest Marks", reportData.examStats.lowestMarks],
+        ["Pass Rate", `${reportData.examStats.passRate}%`],
+        ["Total Fees", `$${reportData.feeStats.totalFees}`],
+        ["Collected Fees", `$${reportData.feeStats.collectedFees}`],
+        ["Pending Fees", `$${reportData.feeStats.pendingFees}`],
+        ["Defaulters", reportData.feeStats.defaulters]
+      ];
+      
+      const wsOverview = XLSX.utils.aoa_to_sheet(overviewData);
+      XLSX.utils.book_append_sheet(wb, wsOverview, "Overview");
+      
+      // Create students sheet
+      const studentsData = [
+        ["Student ID", "Name", "Phone", "Parent Phone", "Status"],
+        ...reportData.students.map(student => [
+          student.studentId,
+          student.name,
+          student.phone,
+          student.parentPhone,
+          student.status
+        ])
+      ];
+      
+      const wsStudents = XLSX.utils.aoa_to_sheet(studentsData);
+      XLSX.utils.book_append_sheet(wb, wsStudents, "Students");
+      
+      // Create detailed stats sheet
+      const statsData = [
+        ["Category", "Statistic", "Value"],
+        ["Attendance", "Total Students", reportData.attendanceStats.totalStudents],
+        ["Attendance", "Average Attendance", `${reportData.attendanceStats.averageAttendance}%`],
+        ["Attendance", "Present Today", reportData.attendanceStats.presentToday],
+        ["Attendance", "Absent Today", reportData.attendanceStats.absentToday],
+        ["Exams", "Average Marks", reportData.examStats.averageMarks],
+        ["Exams", "Highest Marks", reportData.examStats.highestMarks],
+        ["Exams", "Lowest Marks", reportData.examStats.lowestMarks],
+        ["Exams", "Pass Rate", `${reportData.examStats.passRate}%`],
+        ["Fees", "Total Fees", `$${reportData.feeStats.totalFees}`],
+        ["Fees", "Collected Fees", `$${reportData.feeStats.collectedFees}`],
+        ["Fees", "Pending Fees", `$${reportData.feeStats.pendingFees}`],
+        ["Fees", "Defaulters", reportData.feeStats.defaulters]
+      ];
+      
+      const wsStats = XLSX.utils.aoa_to_sheet(statsData);
+      XLSX.utils.book_append_sheet(wb, wsStats, "Detailed Stats");
+      
+      // Generate file and download
+      const fileName = `class-report-${getClassName(selectedClass).replace(/[^a-z0-9]/gi, '-')}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      console.error("Failed to generate Excel file:", error);
+      alert("Failed to generate Excel file. Please try again.");
+    }
+  }
 
   const getClassName = (classId: string) => {
     const cls = classList.find(c => c._id === classId)
@@ -146,15 +235,23 @@ export function ClassReport() {
 
       {/* Report Results */}
       {reportData && (
-        <div className="space-y-6 print:space-y-4">
+        <div id="report-content" className="space-y-6 print:space-y-4">
           {/* Report Header */}
           <div className="flex justify-between items-start print:hidden">
             <div>
               <h2 className="text-xl font-semibold">Class Report - {getClassName(selectedClass)}</h2>
               <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
             </div>
-            {/* <div className="flex gap-2">
-            </div> */}
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handlePrint}>
+                <Print className="h-4 w-4 mr-2" />
+                Print
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="h-4 w-4 mr-2" />
+                Download Excel
+              </Button>
+            </div>
           </div>
 
           {/* Class Overview */}

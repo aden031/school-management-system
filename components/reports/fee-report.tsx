@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Download, PrinterIcon as Print, DollarSign, CalendarIcon, Filter } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import * as XLSX from "xlsx" // Import Excel library
 
 interface Fee {
   _id: string
@@ -132,7 +133,7 @@ export function FeeReport() {
           return feeDate >= startDate && feeDate <= endDate
         })
       } else if (filterType === "student" && selectedStudent) {
-        filteredFees = filteredFees.filter((fee) => fee.studentId._id === selectedStudent)
+        filteredFees = filteredFees.filter((fee) => fee.studentId.id === selectedStudent)
       } else if (filterType === "class" && selectedClass) {
         const classStudents = students.filter((s) => s.classId._id === selectedClass)
         const studentIds = classStudents.map((s) => s._id)
@@ -163,11 +164,70 @@ export function FeeReport() {
   }
 
   const handlePrint = () => {
-    window.print()
+    const printContent = document.getElementById("report-content")?.innerHTML;
+    const originalContent = document.body.innerHTML;
+    
+    if (printContent) {
+      document.body.innerHTML = printContent;
+      window.print();
+      document.body.innerHTML = originalContent;
+      window.location.reload();
+    } else {
+      window.print();
+    }
   }
 
   const handleDownload = () => {
-    console.log("Download report")
+    if (!reportData) {
+      alert("No report data to download");
+      return;
+    }
+
+    try {
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Create detailed worksheet
+      const detailedData = [
+        ["Student", "Class", "Finance Type", "Amount", "Paid", "Balance", "Status", "Date"],
+        ...reportData.fees.map(fee => [
+          fee.studentId?.name || "Unknown",
+          "unknown",
+          fee.financeType,
+          fee.amount,
+          fee.amountPaid,
+          fee.balance,
+          fee.status,
+          new Date(fee.date).toLocaleDateString()
+        ])
+      ];
+      
+      const wsDetailed = XLSX.utils.aoa_to_sheet(detailedData);
+      XLSX.utils.book_append_sheet(wb, wsDetailed, "Fee Records");
+      
+      // Create summary worksheet
+      const summaryData = [
+        ["Summary", ""],
+        ["Total Amount", reportData.summary.totalAmount],
+        ["Total Paid", reportData.summary.totalPaid],
+        ["Total Pending", reportData.summary.totalPending],
+        ["", ""],
+        ["Payment Status", "Count"],
+        ["Paid", reportData.summary.paidCount],
+        ["Partial", reportData.summary.partialCount],
+        ["Unpaid", reportData.summary.unpaidCount]
+      ];
+      
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+      
+      // Generate file and download
+      const fileName = `fee-report_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      console.error("Failed to generate Excel file:", error);
+      alert("Failed to generate Excel file. Please try again.");
+    }
   }
 
   const formatClassName = (cls: Class) => {
@@ -306,23 +366,23 @@ export function FeeReport() {
 
       {/* Report Results */}
       {reportData && (
-        <div className="space-y-6 print:space-y-4">
+        <div id="report-content" className="space-y-6 print:space-y-4">
           {/* Report Header */}
           <div className="flex justify-between items-start print:hidden">
             <div>
               <h2 className="text-xl font-semibold">Fee Report</h2>
               <p className="text-muted-foreground">Generated on {new Date().toLocaleDateString()}</p>
             </div>
-            {/* <div className="flex gap-2">
+            <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handlePrint}>
                 <Print className="h-4 w-4 mr-2" />
                 Print
               </Button>
               <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" />
-                Download
+                Download Excel
               </Button>
-            </div> */}
+            </div>
           </div>
 
           {/* Summary Cards */}
@@ -332,7 +392,7 @@ export function FeeReport() {
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-blue-600" />
                   <div>
-                    <div className="text-2xl font-bold">${reportData.summary.totalAmount}</div>
+                    <div className="text-2xl font-bold">${reportData.summary.totalAmount.toFixed(2)}</div>
                     <div className="text-sm text-muted-foreground">Total Amount</div>
                   </div>
                 </div>
@@ -343,7 +403,7 @@ export function FeeReport() {
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-green-600" />
                   <div>
-                    <div className="text-2xl font-bold">${reportData.summary.totalPaid}</div>
+                    <div className="text-2xl font-bold">${reportData.summary.totalPaid.toFixed(2)}</div>
                     <div className="text-sm text-muted-foreground">Total Paid</div>
                   </div>
                 </div>
@@ -354,7 +414,7 @@ export function FeeReport() {
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-red-600" />
                   <div>
-                    <div className="text-2xl font-bold">${reportData.summary.totalPending}</div>
+                    <div className="text-2xl font-bold">${reportData.summary.totalPending.toFixed(2)}</div>
                     <div className="text-sm text-muted-foreground">Total Pending</div>
                   </div>
                 </div>
@@ -409,11 +469,11 @@ export function FeeReport() {
                     {reportData.fees.map((fee) => (
                       <TableRow key={fee._id}>
                         <TableCell>{fee.studentId && fee.studentId.name ? fee.studentId.name : "Unknown"}</TableCell>
-                        <TableCell>{getClassName(fee.studentId._id)}</TableCell>
+                        <TableCell>Unknow class</TableCell>
                         <TableCell className="capitalize">{fee.financeType}</TableCell>
-                        <TableCell>${fee.amount}</TableCell>
-                        <TableCell>${fee.amountPaid}</TableCell>
-                        <TableCell>${fee.balance}</TableCell>
+                        <TableCell>${fee.amount.toFixed(2)}</TableCell>
+                        <TableCell>${fee.amountPaid.toFixed(2)}</TableCell>
+                        <TableCell>${fee.balance.toFixed(2)}</TableCell>
                         <TableCell>
                           <Badge
                             variant={

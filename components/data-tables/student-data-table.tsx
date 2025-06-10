@@ -43,7 +43,7 @@ export function StudentDataTable() {
         const data = (response.data || []).map((student: any) => ({
           id: student?._id ?? "N/A",
           className: student?.classId?.departmentId?.name && student?.classId?.semester
-            ? `${student.classId.departmentId.name} - Semester ${student.classId.semester}`
+            ? `${student.classId.departmentId.name} - fasal ${student.classId.semester}`
             : "Unknown Class",
           name: student?.name ?? "Unnamed",
           parentPhone: student?.parentPhone ?? "No Phone",
