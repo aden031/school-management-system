@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { FullName, Email, password, phone,  Title, Status } = await request.json()
+    const { FullName, Email, password, phone,  Title, Status ,studentId } = await request.json()
 
     if (!FullName || !Email || !password || !phone) {
       return NextResponse.json({ error: "Name, email and password required" }, { status: 400 })
@@ -68,6 +68,7 @@ export async function POST(request: Request) {
       Email,
       password: hashed,
       phone,
+      studentId,
       Title: Title || "teacher",
       Status: Status || "active",
     })

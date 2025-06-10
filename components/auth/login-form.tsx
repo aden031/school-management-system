@@ -83,9 +83,9 @@ export function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Email || or ID</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input placeholder="name@example.com || or ID:1234" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
