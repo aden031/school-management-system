@@ -1,6 +1,7 @@
 "use client"
 
 import axios from "axios"
+import { useRouter } from "next/router"
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 
 interface AuthContextType {
@@ -25,7 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
@@ -40,6 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setLoading(false)
   }, [])
+
+
+
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -77,7 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
   }
 
+
   if (loading) return null
+
+
+
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
