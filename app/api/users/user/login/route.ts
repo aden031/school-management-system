@@ -5,28 +5,41 @@ import User from "@/lib/models/user"
 
 export async function POST(request: Request) {
   try {
-    const { Email, password } = await request.json()
+    const { Email, password, studentId } = await request.json();
 
-    if (!Email || !password) {
-      return NextResponse.json({ error: "Email and password required" }, { status: 400 })
+    if ((!Email && !studentId) || !password) {
+      return NextResponse.json(
+        { error: "Email or studentId and password are required" },
+        { status: 400 }
+      );
     }
 
-    await connectToDatabase()
+    await connectToDatabase();
 
-    const user = await User.findOne({ Email })
+    // Search for user by either Email or studentId
+    const user = await User.findOne({
+      $or: [{ Email }, { studentId }]
+    });
+
     if (!user) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
+      return NextResponse.json(
+        { error: "Invalid email/studentId or password" },
+        { status: 401 }
+      );
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password)
+    const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
+      return NextResponse.json(
+        { error: "Invalid email/studentId or password" },
+        { status: 401 }
+      );
     }
 
-    const { password: _, ...userData } = user.toObject()
-    return NextResponse.json(userData)
+    const { password: _, ...userData } = user.toObject();
+    return NextResponse.json(userData);
   } catch (error) {
-    console.error("POST /api/users/login error:", error)
-    return NextResponse.json({ error: "Login failed" }, { status: 500 })
+    console.error("POST /api/users/login error:", error);
+    return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }
 }

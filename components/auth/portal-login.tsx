@@ -14,13 +14,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "./auth-context"
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
+  studentId: z.string().min(2, { message: "Student ID must be at least 6 characters" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 })
 
 type LoginFormValues = z.infer<typeof formSchema>
 
-export function LoginForm() {
+export function PortalLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -30,7 +30,7 @@ export function LoginForm() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      studentId: "",
       password: "",
     },
   })
@@ -40,17 +40,12 @@ export function LoginForm() {
     setError(null)
 
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // For demo purposes, accept any valid email/password
-      // In a real app, you would validate credentials against your backend
-      const success = await login(data.email, data.password)
+      const success = await login("" ,  data.password ,data.studentId)
 
       if (success) {
         router.push("/")
       } else {
-        setError("Invalid email or password")
+        setError("Invalid student ID or password")
       }
     } catch (err) {
       setError("An error occurred. Please try again.")
@@ -80,12 +75,17 @@ export function LoginForm() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="email"
+              name="studentId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Student ID</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input 
+                      placeholder="Enter your student ID" 
+                      {...field} 
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -99,7 +99,11 @@ export function LoginForm() {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                      <Input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••" 
+                        {...field} 
+                      />
                       <Button
                         type="button"
                         variant="ghost"

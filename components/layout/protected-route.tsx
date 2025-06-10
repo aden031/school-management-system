@@ -17,13 +17,13 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   useEffect(() => {
     // Skip redirect for login page to avoid redirect loops
-    if (!isAuthenticated && pathname !== "/login") {
+    if (!isAuthenticated && pathname !== "/login" && pathname !== "/studentportal") {
       router.push("/login")
     }
   }, [isAuthenticated, router, pathname])
 
   // If not authenticated and not on login page, don't render children
-  if (!isAuthenticated && pathname !== "/login") {
+  if (!isAuthenticated && pathname !== "/login" && pathname !== "/studentportal") {
     return null
   }
 

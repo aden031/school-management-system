@@ -7,7 +7,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 interface AuthContextType {
   isAuthenticated: boolean
   user: User | null
-  login: (email: string, password: string) => Promise<boolean>
+  login: (email: string, password: string , studentId:string) => Promise<boolean>
   logout: () => void
 }
 
@@ -18,6 +18,7 @@ interface User {
   fullname: string
   role: Role
   phone?: number | null
+  studentId: any | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -44,13 +45,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string ,studentId:string): Promise<boolean> => {
     try {
-      const response = await axios.post("/api/users/user/login", {
-        Email: email, // backend expects capital "E"
-        password,
-      })
+      const payload: any = { password }
+      if (studentId) {
+      payload.studentId = studentId // backend expects capital "S"
+      } else {
+      payload.Email = email // backend expects capital "E"
+      }
 
+      const response = await axios.post("/api/users/user/login", payload)
       if (response.status === 200) {
         const data = response.data
 
@@ -58,7 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: data.Email,
           fullname:data.FullName,
           role:data.Title,
-          phone:data?.phone || null
+          phone:data?.phone || null,
+          studentId:data?.studentId || null
         }
 
         localStorage.setItem("user", JSON.stringify(user))
