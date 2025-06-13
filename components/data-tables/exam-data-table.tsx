@@ -19,6 +19,7 @@ import { ExamDialog } from "@/components/forms/exam-form"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { ExamFileUpload } from "../forms/exam-bulk-upload"
+import { useAuth } from "../auth/auth-context"
 
 export type Exam = {
   id: string
@@ -38,6 +39,10 @@ export function ExamDataTable() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [data, setData] = useState<Exam[]>([])
   const [loading, setLoading] = useState(true)
+  const {user}=useAuth()
+  // Show links based on role
+  const role = user?.role
+  const isTeacher = role === "teacher"
 
   const fetchExams = async () => {
     setLoading(true)
@@ -132,18 +137,23 @@ export function ExamDataTable() {
         return isNaN(parsedDate.getTime()) ? "Unknown Date" : format(parsedDate, "PPP")
       },
     },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const exam = row.original
-        return (
-          <div className="flex items-center gap-2">
-            <ExamDialog mode="edit" exam={exam} onDone={fetchExams} />
-            <ExamDialog mode="delete" exam={exam} onDone={fetchExams} />
-          </div>
-        )
-      },
-    },
+    // Hide actions column if teacher
+    ...(!isTeacher
+      ? [
+          {
+            id: "actions",
+            cell: ({ row }: any) => {
+              const exam = row.original
+              return (
+                <div className="flex items-center gap-2">
+                  <ExamDialog mode="edit" exam={exam} onDone={fetchExams} />
+                  <ExamDialog mode="delete" exam={exam} onDone={fetchExams} />
+                </div>
+              )
+            },
+          },
+        ]
+      : []),
   ]
 
   const table = useReactTable({

@@ -57,13 +57,7 @@ export function DashboardHeader({ sidebarOpen = true, onSidebarOpenChange, user 
         </div>
       </div>
       <div className="ml-auto flex items-center gap-2">
-        <Button variant="outline" size="icon" className="relative">
-          <Bell className="h-4 w-4" />
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-            3
-          </span>
-          <span className="sr-only">Notifications</span>
-        </Button>
+
         <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

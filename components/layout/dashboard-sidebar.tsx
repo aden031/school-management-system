@@ -1,22 +1,17 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import {
   BookOpen,
-  Building2,
   GraduationCap,
-  Home,
   LayoutDashboard,
   Menu,
   School,
-  Settings,
   Users,
   X,
-  Paperclip,
   BookCheck,
   Coins,
   BarChart2,
@@ -33,41 +28,38 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function DashboardSidebar({ className, open = true, onOpenChange }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const {user}=useAuth()
-  // Handle mobile menu separately from desktop sidebar state
-  const toggleMobileMenu = () => {
-    setIsMobileOpen(!isMobileOpen)
-  }
+  const { user } = useAuth()
 
-  // Close mobile menu on window resize (if screen becomes larger)
+  const toggleMobileMenu = () => setIsMobileOpen(!isMobileOpen)
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768 && isMobileOpen) {
         setIsMobileOpen(false)
       }
     }
-
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
   }, [isMobileOpen])
 
+  // Show links based on role
+  const role = user?.role
+  const isAdmin = role === "admin"
+  const isOfficer = role === "officer"
+  const isTeacher = role === "teacher"
+
   return (
     <>
-      {/* Mobile menu button - visible only on mobile */}
       <Button variant="outline" size="icon" className="fixed left-4 top-4 z-40 md:hidden" onClick={toggleMobileMenu}>
         <Menu className="h-4 w-4" />
         <span className="sr-only">Toggle Menu</span>
       </Button>
 
-      {/* Sidebar - different behavior on mobile vs desktop */}
       <aside
         className={cn(
           "z-30 flex flex-col border-r bg-background transition-all duration-300",
-          // Mobile: fixed positioning with transform
           "fixed inset-y-0 left-0 w-72 md:static",
-          // Mobile: show/hide based on isMobileOpen
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          // Desktop: width based on open state
           open ? "md:w-72" : "md:w-20",
           className,
         )}
@@ -84,130 +76,58 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
         </div>
         <ScrollArea className="flex-1 px-4 py-6">
           <nav className="flex flex-col gap-2">
-            <Link
-              href="/"
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                !open && "md:justify-center md:px-0",
-              )}
-            >
+            <Link href="/" className={cn("flex items-center gap-3 px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground", !open && "md:justify-center md:px-0")}>
               <LayoutDashboard className="h-4 w-4" />
               {(open || isMobileOpen) && <span>Xogta Guud</span>}
             </Link>
-            {(open || isMobileOpen) && (
+
+            {(isAdmin || isOfficer || isTeacher) && (open || isMobileOpen) && (
               <div className="mt-2 px-3 text-xs font-semibold text-muted-foreground">Academic</div>
             )}
-            <Link
-              href="/departments"
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                !open && "md:justify-center md:px-0",
-              )}
-            >
-              <BookOpen className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Xarumaha</span>}
-            </Link>
-            <Link
-              href="/classes"
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                !open && "md:justify-center md:px-0",
-              )}
-            >
-              <GraduationCap className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Fasalada</span>}
-            </Link>
-            <Link
-              href="/students"
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                !open && "md:justify-center md:px-0",
-              )}
-            >
-              <Users className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Ardayda</span>}
-            </Link>
-            <Link
-              href="/attendances"
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                !open && "md:justify-center md:px-0",
-              )}
-            >
-              <BookCheck className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Xaadirinta</span>}
-            </Link>
-            <Link
-              href="/courses"
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                !open && "md:justify-center md:px-0",
-              )}
-            >
-              <BookOpen className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Maadooyinka</span>}
-            </Link>
-            <Link
-              href="/exams"
-              className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-              !open && "md:justify-center md:px-0",
-              )}
-            >
-              <GraduationCap className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Imtixanadka</span>}
-            </Link>
 
-            <Link
-              href="/reports"
-              className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-              !open && "md:justify-center md:px-0",
-              )}
-            >
-              <BarChart2 className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Reports</span>}
-            </Link>
-
-            <Link
-              href="/finances"
-              className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-              !open && "md:justify-center md:px-0",
-              )}
-            >
-              <Coins className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Lacag Bixinada</span>}
-            </Link>
-            
-            {(open || isMobileOpen) && (
-              <div className="mt-2 px-3 text-xs font-semibold text-muted-foreground">Administration</div>
+            {isAdmin && (
+              <>
+                <SidebarLink href="/departments" icon={BookOpen} label="Xarumaha" open={open} isMobileOpen={isMobileOpen} />
+                <SidebarLink href="/classes" icon={GraduationCap} label="Fasalada" open={open} isMobileOpen={isMobileOpen} />
+                <SidebarLink href="/students" icon={Users} label="Ardayda" open={open} isMobileOpen={isMobileOpen} />
+                <SidebarLink href="/courses" icon={BookOpen} label="Maadooyinka" open={open} isMobileOpen={isMobileOpen} />
+              </>
             )}
-            
 
-            
-            <Link
-              href="/users"
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                !open && "md:justify-center md:px-0",
-              )}
-            >
-              <Users className="h-4 w-4" />
-              {(open || isMobileOpen) && <span>Users</span>}
-            </Link>
+            {(isAdmin || isTeacher) && (
+              <SidebarLink href="/attendances" icon={BookCheck} label="Xaadirinta" open={open} isMobileOpen={isMobileOpen} />
+            )}
+
+            {(isAdmin || isOfficer || isTeacher) && (
+              <SidebarLink href="/exams" icon={GraduationCap} label="Imtixanadka" open={open} isMobileOpen={isMobileOpen} />
+            )}
+
+            {(isAdmin || isOfficer) && (
+              <>
+                <SidebarLink href="/reports" icon={BarChart2} label="Reports" open={open} isMobileOpen={isMobileOpen} />
+                <SidebarLink href="/finances" icon={Coins} label="Lacag Bixinada" open={open} isMobileOpen={isMobileOpen} />
+              </>
+            )}
+
+            {isAdmin && (open || isMobileOpen) && (
+              <>
+                <div className="mt-2 px-3 text-xs font-semibold text-muted-foreground">Administration</div>
+                <SidebarLink href="/users" icon={Users} label="Users" open={open} isMobileOpen={isMobileOpen} />
+              </>
+            )}
           </nav>
         </ScrollArea>
+
         {(open || isMobileOpen) && (
           <div className="border-t p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-xs font-medium text-primary">AD</span>
+                  <span className="text-xs font-medium text-primary">{user?.fullname?.charAt(0).toUpperCase() || "U"}</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium">{user?.fullname || "Admin user"} </p>
-                  <p className="text-xs text-muted-foreground">{user?.email || "admin@gmail.com"}</p>
+                  <p className="text-sm font-medium">{user?.fullname || "User"} </p>
+                  <p className="text-xs text-muted-foreground">{user?.email || "example@email.com"}</p>
                 </div>
               </div>
               <ThemeToggle />
@@ -216,10 +136,22 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
         )}
       </aside>
 
-      {/* Mobile overlay - only visible when mobile menu is open */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-20 bg-black/50 md:hidden" onClick={toggleMobileMenu} aria-hidden="true" />
       )}
     </>
+  )
+}
+
+// 🔧 Mini helper component for DRY sidebar links
+function SidebarLink({ href, icon: Icon, label, open, isMobileOpen }: { href: string, icon: any, label: string, open: boolean, isMobileOpen: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={cn("flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground", !open && "md:justify-center md:px-0")}
+    >
+      <Icon className="h-4 w-4" />
+      {(open || isMobileOpen) && <span>{label}</span>}
+    </Link>
   )
 }
