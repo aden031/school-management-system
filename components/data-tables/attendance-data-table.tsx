@@ -375,6 +375,12 @@ export function AttendanceDataTable() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   
+  // Date filter state for history table
+  const [dateFilter, setDateFilter] = useState({ 
+    from: format(new Date(new Date().setDate(new Date().getDate() - 30)), "yyyy-MM-dd"), 
+    to: format(new Date(), "yyyy-MM-dd") 
+  })
+  
   // Dialog state
   const [dialogState, setDialogState] = useState<{
     open: boolean
@@ -426,6 +432,23 @@ export function AttendanceDataTable() {
       }
     })
   }, [attendances, classes])
+
+  // Filter attendance history by date range
+  const filteredByDateAttendances = useMemo(() => {
+    if (!dateFilter.from && !dateFilter.to) return transformedAttendances;
+    
+    const fromDate = dateFilter.from ? new Date(dateFilter.from) : null;
+    const toDate = dateFilter.to ? new Date(dateFilter.to) : null;
+    
+    if (toDate) toDate.setHours(23, 59, 59, 999); // End of day
+    
+    return transformedAttendances.filter(att => {
+      const attDate = new Date(att.date);
+      const isAfterFrom = fromDate ? attDate >= fromDate : true;
+      const isBeforeTo = toDate ? attDate <= toDate : true;
+      return isAfterFrom && isBeforeTo;
+    });
+  }, [transformedAttendances, dateFilter])
 
   // Filter courses based on selected class
   useEffect(() => {
@@ -651,7 +674,7 @@ export function AttendanceDataTable() {
 
   // Initialize table
   const table = useReactTable({
-    data: transformedAttendances,
+    data: filteredByDateAttendances,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -825,6 +848,35 @@ export function AttendanceDataTable() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Date filter for history table */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="space-y-2">
+              <Label>Date Range (From)</Label>
+              <Input
+                type="date"
+                value={dateFilter.from}
+                onChange={e => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Date Range (To)</Label>
+              <Input
+                type="date"
+                value={dateFilter.to}
+                onChange={e => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2 flex items-end">
+              <Button 
+                variant="outline" 
+                onClick={() => setDateFilter({ from: '', to: '' })}
+                className="w-full"
+              >
+                Clear Date Filter
+              </Button>
+            </div>
+          </div>
+          
           <div className="rounded-md border">
             <Table>
               <TableHeader>
