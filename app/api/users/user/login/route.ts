@@ -17,9 +17,11 @@ export async function POST(request: Request) {
     await connectToDatabase();
 
     // Search for user by either Email or studentId
-    const user = await User.findOne({
-      $or: [{ Email }, { studentId }]
-    });
+    const query: any = {};
+    if (Email) query.Email = Email;
+    if (studentId) query.studentId = studentId;
+
+    const user = await User.findOne(query);
 
     if (!user) {
       return NextResponse.json(

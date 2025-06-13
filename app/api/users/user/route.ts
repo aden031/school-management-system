@@ -4,7 +4,7 @@ import User from "@/lib/models/user"
 import connectToDatabase from "@/lib/db"
 import mongoose from "mongoose"
 
-const allowedTitles = ["parent", "teacher", "officer" , "student"]
+const allowedTitles = ["parent", "teacher", "officer" , "student" , "admin"]
 const allowedStatus = ["active", "inactive"]
 
 export async function GET(request: Request) {

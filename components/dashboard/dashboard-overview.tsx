@@ -28,7 +28,7 @@ interface DashboardOverviewProps {
   id: string
   fullName: string
   email: string
-  title: "user" | "dean" | "teacher" | "officer"
+  title: "user"  | "teacher" | "officer" | "admin"
   status: "active" | "inactive"
 } | null
 }

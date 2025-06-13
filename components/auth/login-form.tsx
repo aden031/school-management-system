@@ -46,7 +46,7 @@ export function LoginForm() {
 
       // For demo purposes, accept any valid email/password
       // In a real app, you would validate credentials against your backend
-      const success = await login(data.email, data.password)
+      const success = await login(data.email, data.password ,null)
 
       if (success) {
         router.push("/")

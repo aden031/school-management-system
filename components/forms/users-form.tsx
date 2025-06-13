@@ -308,6 +308,7 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="admin">Admin</SelectItem>
                         <SelectItem value="teacher">Teacher</SelectItem>
                         <SelectItem value="parent">Parent</SelectItem>
                         <SelectItem value="officer">Officer</SelectItem>

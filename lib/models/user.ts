@@ -7,7 +7,7 @@ const UserSchema = new Schema(
     password: { type: String, required: true },
     Title: {
       type: String,
-      enum: ['parent', 'teacher', 'officer' , 'student'], // ✅ only these 3
+      enum: ['parent', 'teacher', 'officer' , 'student' , 'admin'],
       default: 'teacher',
     },
     studentId :{type:String},
