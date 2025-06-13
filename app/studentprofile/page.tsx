@@ -63,6 +63,11 @@ export default function StudentReportPage() {
   const { user, logout } = useAuth();
   const [reportData, setReportData] = useState<StudentReportData | null>(null)
   const [loading, setLoading] = useState(true)
+  // Password update state
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [passwordMessage, setPasswordMessage] = useState<{type: 'success' | 'error', text: string} | null>(null)
+  const [updatingPassword, setUpdatingPassword] = useState(false)
 
   useEffect(() => {
     if (user?.studentId) {
@@ -84,6 +89,44 @@ export default function StudentReportPage() {
       setReportData(null)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handlePasswordUpdate = async () => {
+    if (!user) return
+    
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({type: 'error', text: 'Passwords do not match'})
+      return
+    }
+    
+    if (newPassword.length < 6) {
+      setPasswordMessage({type: 'error', text: 'Password must be at least 6 characters'})
+      return
+    }
+    
+    try {
+      setUpdatingPassword(true)
+      const response = await fetch(`/api/users/user/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ password: newPassword })
+      })
+      
+      if (response.ok) {
+        setPasswordMessage({type: 'success', text: 'Password updated successfully!'})
+        setNewPassword("")
+        setConfirmPassword("")
+      } else {
+        const errorData = await response.json()
+        setPasswordMessage({type: 'error', text: errorData.message || 'Failed to update password'})
+      }
+    } catch (error) {
+      setPasswordMessage({type: 'error', text: 'Network error. Please try again.'})
+    } finally {
+      setUpdatingPassword(false)
     }
   }
 
@@ -512,6 +555,54 @@ export default function StudentReportPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Password Update Section */}
+      {user && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Update Password</CardTitle>
+            <CardDescription>Change your account password</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4 max-w-md">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input 
+                  id="new-password" 
+                  type="password" 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input 
+                  id="confirm-password" 
+                  type="password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                />
+              </div>
+              
+              {passwordMessage && (
+                <div className={`text-sm ${passwordMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                  {passwordMessage.text}
+                </div>
+              )}
+              
+              <Button 
+                onClick={handlePasswordUpdate}
+                disabled={updatingPassword}
+                className="mt-2"
+              >
+                {updatingPassword ? "Updating..." : "Update Password"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

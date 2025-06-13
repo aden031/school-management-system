@@ -14,6 +14,7 @@ interface AuthContextType {
 type Role = "parent" | "teacher" | "officer" | "student" | "admin"
 
 interface User {
+  id:string
   email: string
   fullname: string
   role: Role
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = response.data
 
         const user: User = {
+          id:data._id,
           email: data.Email,
           fullname:data.FullName,
           role:data.Title,

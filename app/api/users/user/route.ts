@@ -85,7 +85,7 @@ export async function PUT(request: Request) {
   try {
     const { id, FullName, Email, password, Title, Status } = await request.json()
 
-    if (!id || !FullName || !Email) {
+    if (!id ) {
       return NextResponse.json({ error: "ID, name and email required" }, { status: 400 })
     }
 
