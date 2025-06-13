@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, Download, PrinterIcon as Print, User, Calendar, FileText, DollarSign } from "lucide-react"
-import { classes, courses, examTypes } from "@/data"
-import * as XLSX from "xlsx" // Import Excel library
+import { courses, examTypes } from "@/data"
+import * as XLSX from "xlsx"
 
 interface StudentReportData {
   student: {
@@ -46,29 +46,75 @@ interface StudentReportData {
   }
 }
 
+interface ClassDetails {
+  _id: string
+  departmentId: {
+    _id: string
+    name: string
+  }
+  semester: number
+  classMode: string
+  type: string
+  status: string
+  createdAt: string
+  updatedAt: string
+}
+
 export function StudentReport() {
   const [studentId, setStudentId] = useState("")
   const [reportData, setReportData] = useState<StudentReportData | null>(null)
+  const [classDetails, setClassDetails] = useState<ClassDetails | null>(null)
   const [loading, setLoading] = useState(false)
+  const [classLoading, setClassLoading] = useState(false)
 
   const generateReport = async () => {
     if (!studentId.trim()) return
 
     setLoading(true)
+    setClassDetails(null)
 
     try {
+      // Fetch student report
       const response = await fetch(`/api/reports/student-report/${studentId}`)
       if (!response.ok) {
         throw new Error("Student not found")
       }
       const data = await response.json()
       setReportData(data)
+
+      // Fetch class details if available
+      if (data?.student?.classId?._id) {
+        fetchClassDetails(data.student.classId._id)
+      }
     } catch (error) {
       console.error("Error fetching report:", error)
       setReportData(null)
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchClassDetails = async (classId: string) => {
+    setClassLoading(true)
+    try {
+      const response = await fetch(`/api/classes/${classId}`)
+      if (!response.ok) {
+        throw new Error("Class details not found")
+      }
+      const data = await response.json()
+      setClassDetails(data)
+    } catch (error) {
+      console.error("Error fetching class details:", error)
+      setClassDetails(null)
+    } finally {
+      setClassLoading(false)
+    }
+  }
+
+  const getClassName = () => {
+    if (!classDetails) return "Loading class details..."
+    
+    return `${classDetails.departmentId.name} - Semester ${classDetails.semester}${classDetails.type}`
   }
 
   const handlePrint = () => {
@@ -142,7 +188,7 @@ export function StudentReport() {
         ["Roll Number", reportData.student.studentId],
         ["Parent Phone", reportData.student.parentPhone],
         ["Student Phone", reportData.student.phone],
-        ["Class", getClassName(reportData.student.classId._id)],
+        ["Class", classDetails ? getClassName() : reportData.student.classId._id],
         ["Gender", reportData.student.gender],
         ["Status", reportData.student.status],
         ["Enrollment Date", new Date(reportData.student.createdAt).toLocaleDateString()]
@@ -239,10 +285,6 @@ export function StudentReport() {
     }
   }
 
-  const getClassName = (classId: string) => {
-    return classes.find((c) => c.id === classId)?.name || "Unknown"
-  }
-
   const getCourseName = (courseId: string) => {
     return courses.find((c) => c.id === courseId)?.name || "Unknown"
   }
@@ -332,11 +374,17 @@ export function StudentReport() {
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground print:text-xs">Class</Label>
-                  <p className="font-medium">{getClassName(reportData.student.classId._id)}</p>
+                  <p className="font-medium">
+                    {classLoading 
+                      ? "Loading..." 
+                      : classDetails 
+                        ? getClassName() 
+                        : "Class details not available"}
+                  </p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground print:text-xs">Gender</Label>
-                  <p className="font-medium">{reportData.student.gender}</p>
+                  {/* <Label className="text-sm font-medium text-muted-foreground print:text-xs">Gender</Label>
+                  <p className="font-medium">{reportData.student.gender}</p> */}
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-muted-foreground print:text-xs">Status</Label>
