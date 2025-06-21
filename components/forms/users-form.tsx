@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import axios from "axios"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
@@ -27,14 +27,14 @@ const strongPasswordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};
 const passwordErrorMsg = "Password must be at least 8 characters long and include at least one letter, one number, and one symbol.";
 
 // Phone validation regex and error message
-const phoneRegex = /^\?[1-9]\d{1,14}$/; // E.164 format (supports international numbers)
-const phoneErrorMsg = "Please enter a valid phone number including country code (e.g., +12345678901)";
+const phoneRegex = /^[1-9][0-9]{8,14}$/; // 9-15 digits, first digit 1-9, no plus sign
+const phoneErrorMsg = "Please enter a valid phone number (9-15 digits, numbers only, no plus sign)";
 
 // Separate schemas
 const baseUserSchema = z.object({
   fullName: z.string(),
   email: z.string().email(),
-  phone: z.string().regex(/^[0-9]+$/, "Phone number must contain only digits."),
+  phone: z.string().regex(phoneRegex, phoneErrorMsg),
   title: z.string(),
   status: z.string(),
   studentId: z.string().optional(), // Added studentId field
@@ -43,7 +43,7 @@ const baseUserSchema = z.object({
 const addUserSchema = baseUserSchema.extend({
   password: z.string().regex(strongPasswordRegex, passwordErrorMsg),
 }).refine(data => data.title !== 'student' || data.studentId, {
-  message: "Student selection is required",
+  message: "Student ID is required for students",
   path: ["studentId"],
 });
 
@@ -53,7 +53,7 @@ const editUserSchema = baseUserSchema.extend({
     { message: passwordErrorMsg }
   ),
 }).refine(data => data.title !== 'student' || data.studentId, {
-  message: "Student selection is required",
+  message: "Student ID is required for students",
   path: ["studentId"],
 });
 
@@ -65,17 +65,10 @@ interface UsersDialogProps {
   onDone?: () => void
 }
 
-interface Student {
-  _id: string;
-  name: string;
-  studentId: number;
-}
-
 export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
   const [open, setOpen] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [students, setStudents] = useState<Student[]>([])
 
   const defaultValues: Partial<UsersFormValues> = {
     fullName: user?.fullName || "",
@@ -94,27 +87,9 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
 
   const titleValue = form.watch("title")
 
-  // Fetch students when dialog opens and title is student
-  useEffect(() => {
-    const fetchStudents = async () => {
-      if (open && titleValue === "student") {
-        try {
-          const response = await axios.get("/api/student")
-          setStudents(response.data)
-        } catch (error) {
-          console.error("Failed to fetch students:", error)
-          setStudents([])
-        }
-      }
-    }
-
-    fetchStudents()
-  }, [open, titleValue])
-
   const handleClose = () => {
     setOpen(false)
     form.reset()
-    setStudents([])
   }
 
   const onSubmit = async (data: UsersFormValues) => {
@@ -312,7 +287,7 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
                         <SelectItem value="teacher">Teacher</SelectItem>
                         <SelectItem value="parent">Parent</SelectItem>
                         <SelectItem value="officer">Officer</SelectItem>
-                        <SelectItem value="student">Student</SelectItem> {/* Added student option */}
+                        <SelectItem value="student">Student</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -320,40 +295,22 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
                 )}
               />
 
-              {/* Student selection field - only shown when title is student */}
+              {/* Manual Student ID input - shown only when title is student */}
               {titleValue === "student" && (
                 <FormField
                   control={form.control}
                   name="studentId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Select Student</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        value={field.value}
-                        disabled={students.length === 0}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={students.length ? "Select a student" : "Loading students..."} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {students.map(student => (
-                            <SelectItem 
-                              key={student._id} 
-                              value={student.studentId.toString()}
-                            >
-                              {student.name} (ID: {student.studentId})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {students.length === 0 && (
-                        <p className="text-sm text-muted-foreground">
-                          No active students found
-                        </p>
-                      )}
+                      <FormLabel>Student ID</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Enter Student ID"
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value)}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
