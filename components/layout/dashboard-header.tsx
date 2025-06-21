@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/components/auth/auth-context"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 interface DashboardHeaderProps {
   sidebarOpen?: boolean
@@ -80,11 +81,9 @@ export function DashboardHeader({ sidebarOpen = true, onSidebarOpenChange, user 
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <Link href={'/profile'}>
+                <span>Profile & Settings</span>
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
