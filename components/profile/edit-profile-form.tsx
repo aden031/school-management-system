@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, type FormEvent } from "react"
-import { useAuth, type User } from "@/components/auth/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,23 +8,20 @@ import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 
 interface EditProfileFormProps {
-  currentUser: User
+  currentUser: any;
 }
 
 export function EditProfileForm({ currentUser }: EditProfileFormProps) {
-//   const { updateUserProfile } = useAuth()
   const { toast } = useToast()
   const [name, setName] = useState(currentUser.fullname)
   const [email, setEmail] = useState(currentUser.email)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // Password fields (optional, can be expanded later)
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmNewPassword, setConfirmNewPassword] = useState("")
 
   useEffect(() => {
-    setName(currentUser.fullName)
+    setName(currentUser.fullname)
     setEmail(currentUser.email)
   }, [currentUser])
 
@@ -33,6 +29,7 @@ export function EditProfileForm({ currentUser }: EditProfileFormProps) {
     e.preventDefault()
     setIsSubmitting(true)
 
+    // Password validation
     if (newPassword && newPassword !== confirmNewPassword) {
       toast({
         title: "Error",
@@ -43,7 +40,7 @@ export function EditProfileForm({ currentUser }: EditProfileFormProps) {
       return
     }
 
-    // Basic validation
+    // Name validation
     if (!name.trim()) {
       toast({
         title: "Error",
@@ -55,11 +52,13 @@ export function EditProfileForm({ currentUser }: EditProfileFormProps) {
     }
 
     try {
-      // In a real app, you'd send this to a backend API
-      // For this demo, we update AuthContext and localStorage
-      const updatedUser = { ...currentUser, name, email }
-
-      // Simulate API call for password change if newPassword is provided
+      // Prepare update payload
+      const payload: Record<string, any> = { id: currentUser.id }
+      
+      if (name !== currentUser.fullname) {
+        payload.FullName = name
+      }
+      
       if (newPassword) {
         if (!currentPassword) {
           toast({
@@ -70,36 +69,48 @@ export function EditProfileForm({ currentUser }: EditProfileFormProps) {
           setIsSubmitting(false)
           return
         }
-        // Here you would typically verify currentPassword against a stored hash
-        // For demo: assume currentPassword is correct if provided
-        console.log("Simulating password change...")
-        // updatedUser.password = newPassword; // Don't store plain text password
+        payload.password = newPassword
+        payload.currentPassword = currentPassword
       }
 
-    //   const success = await updateUserProfile(updatedUser, currentPassword, newPassword)
-
-      if (true) { //success
+      // Skip API call if nothing changed
+      if (Object.keys(payload).length === 1) {
         toast({
-          title: "Success",
-          description: "Profile updated successfully.",
+          title: "No changes",
+          description: "No changes to update.",
         })
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to update profile. If changing password, ensure current password is correct.",
-          variant: "destructive",
-        })
+        setIsSubmitting(false)
+        return
       }
-    } catch (error) {
+
+      // API call to update user
+      const response = await fetch("/api/users/user", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to update profile")
+      }
+
+      // Update client state
+      const updatedUser = { ...currentUser, fullname: name }
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully.",
+      })
+    } catch (error: any) {
       console.error("Profile update error:", error)
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: error.message || "An unexpected error occurred. Please try again.",
         variant: "destructive",
       })
     } finally {
       setIsSubmitting(false)
-      // Clear password fields after submission attempt
       setCurrentPassword("")
       setNewPassword("")
       setConfirmNewPassword("")
@@ -111,12 +122,17 @@ export function EditProfileForm({ currentUser }: EditProfileFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
-          <CardDescription>Update your name and passowrd .</CardDescription>
+          <CardDescription>Update your name and password.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+            <Input 
+              id="name" 
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              required 
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -126,7 +142,7 @@ export function EditProfileForm({ currentUser }: EditProfileFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled // Email is often used as an identifier and might not be changeable
+              disabled
             />
             <p className="text-xs text-muted-foreground">Email address cannot be changed.</p>
           </div>
