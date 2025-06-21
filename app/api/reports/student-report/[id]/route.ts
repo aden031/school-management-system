@@ -6,7 +6,7 @@ import { Attendance } from "@/lib/models/attendance";
 import { Exam } from "@/lib/models/exam";
 import { Fee } from "@/lib/models/fee";
 import mongoose from "mongoose";
-
+import Class from "@/lib/models/class";
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     await connectToDatabase();
@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     // Find student and populate class name
     const student = await Student.findOne({ $or: orConditions })
-      .populate({ path: "classId", select: "name" })
+      .populate({ path: "classId", select: "classMode type semester" })
       .lean();
 
     if (!student) {

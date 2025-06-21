@@ -246,7 +246,9 @@ export default function StudentReportPage() {
                 </div>
                 <div>
                   <Label className="text-sm text-muted-foreground">Class</Label>
-                  <p className="font-medium">{getClassName(reportData.student.classId._id)}</p>
+                    <p className="font-medium">
+                     {reportData.student.classId.semester}{reportData.student.classId.type} - {reportData.student.classId.classMode}
+                    </p>
                 </div>
                 <div>
                   <Label className="text-sm text-muted-foreground">Enrollment Date</Label>
@@ -319,7 +321,7 @@ export default function StudentReportPage() {
                               {new Date(record.date).toLocaleDateString()}
                             </TableCell>
                             <TableCell>
-                              {getCourseName(record.courseId)}
+                              {"History"}
                             </TableCell>
                             <TableCell className="text-right">
                               <Badge 

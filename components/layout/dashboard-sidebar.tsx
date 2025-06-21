@@ -76,10 +76,12 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
         </div>
         <ScrollArea className="flex-1 px-4 py-6">
           <nav className="flex flex-col gap-2">
-            <Link href="/" className={cn("flex items-center gap-3 px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground", !open && "md:justify-center md:px-0")}>
+            {(isAdmin || isOfficer) && (
+              <Link href="/" className={cn("flex items-center gap-3 px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground", !open && "md:justify-center md:px-0")}>
               <LayoutDashboard className="h-4 w-4" />
               {(open || isMobileOpen) && <span>Xogta Guud</span>}
-            </Link>
+              </Link>
+            )}
 
             {(isAdmin || isOfficer || isTeacher) && (open || isMobileOpen) && (
               <div className="mt-2 px-3 text-xs font-semibold text-muted-foreground">Academic</div>
