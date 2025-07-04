@@ -24,7 +24,10 @@ const formSchema = z.object({
   classId: z.string().optional(),
   name: z.string().min(2, "Name must be at least 2 characters.").optional(),
   parentPhone: z.string().regex(/^[0-9]+$/, "Phone number must contain only digits."),
-  studentId: z.string().optional(), // handle conversion later
+  studentId: z
+    .string()
+    .regex(/^\d{6}$/, "Student ID must be exactly 6 digits.")
+    .optional(),
   status: z.enum(["active", "inactive"]).optional(),
 })
 

@@ -707,8 +707,8 @@ export function AttendanceDataTable() {
                   {classes.map(cls => (
                     <SelectItem key={cls._id} value={cls._id}>
                       {cls.departmentId?.name
-                      ? `${cls.departmentId.name} - Semester ${cls.semester}`
-                      : `Unknown Department - Semester ${cls.semester}`}
+                      ? `${cls.departmentId.name} - Fasalka ${cls.semester}`
+                      : `Xarun aan laga gran  - Fasalka ${cls.semester}`}
                     </SelectItem>
                   ))}
                 </SelectContent>

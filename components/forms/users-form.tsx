@@ -37,7 +37,9 @@ const baseUserSchema = z.object({
   phone: z.string().regex(phoneRegex, phoneErrorMsg),
   title: z.string(),
   status: z.string(),
-  studentId: z.string().optional(), // Added studentId field
+  studentId: z.string()
+            .regex(/^\d{6}$/, "Student ID must be exactly 6 digits")
+            .optional(), // Student ID must be 6 digits if provided
 });
 
 const addUserSchema = baseUserSchema.extend({
