@@ -51,6 +51,7 @@ export function UsersDataTable() {
         fullName: u.FullName,
         email: u.Email,
         title: u.Title,
+        phone : u.phone , 
         status: u.Status,
       }))
 

@@ -11,7 +11,7 @@ export interface IExamType extends Document {
 const ExamTypeSchema: Schema<IExamType> = new Schema({
   name: {
     type: String,
-    enum: ['mid term', 'final', 'quiz'],
+    enum: ['mid term', 'final', 'quiz' , ],
     required: true,
   },
   marks: {

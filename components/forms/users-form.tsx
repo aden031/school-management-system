@@ -37,9 +37,7 @@ const baseUserSchema = z.object({
   phone: z.string().regex(phoneRegex, phoneErrorMsg),
   title: z.string(),
   status: z.string(),
-  studentId: z.string()
-            .regex(/^\d{6}$/, "Student ID must be exactly 6 digits")
-            .optional(), // Student ID must be 6 digits if provided
+  studentId: z.coerce.string().optional(), // Coerce to string
 });
 
 const addUserSchema = baseUserSchema.extend({
@@ -75,11 +73,11 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
   const defaultValues: Partial<UsersFormValues> = {
     fullName: user?.fullName || "",
     email: user?.email || "",
-    phone: user?.phone || "",
+    phone: user?.phone as string || "",
     password: "",
     title: user?.title || "teacher",
     status: user?.status || "active",
-    studentId: user?.studentId?.toString() || "", // Added studentId default value
+    studentId: user?.studentId?.toString() || "", // Ensure string value
   }
 
   const form = useForm<UsersFormValues>({
@@ -310,7 +308,6 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
                           type="number"
                           placeholder="Enter Student ID"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value)}
                         />
                       </FormControl>
                       <FormMessage />
