@@ -146,6 +146,11 @@ export function FeeDataTable() {
           </Badge>
         )
       },
+      // FIX: Add exact match filter function
+      filterFn: (row, columnId, filterValue) => {
+        if (!filterValue) return true;
+        return row.getValue(columnId) === filterValue;
+      },
     },
     {
       accessorKey: "dueDate",
@@ -209,7 +214,9 @@ export function FeeDataTable() {
             className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             value={(table.getColumn("status")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("status")?.setFilterValue(event.target.value)
+              table.getColumn("status")?.setFilterValue(
+                event.target.value || undefined // Set to undefined when empty
+              )
             }
           >
             <option value="">All Statuses</option>
