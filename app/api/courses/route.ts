@@ -60,12 +60,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Department not found" }, { status: 404 })
     }
 
-    // Check if course name already exists
-    const existingCourse = await Course.findOne({ courseName: body.courseName })
-    if (existingCourse) {
-      return NextResponse.json({ error: "Course name already exists" }, { status: 400 })
-    }
-
     // Create new course
     const course = await Course.create({
       courseName: body.courseName,

@@ -113,6 +113,7 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
 
   const handleSubmit = async (values: CoursesFormValues) => {
     setLoading(true)
+    console.log(values)
     try {
       const method = mode === "edit" ? "PUT" : "POST"
       const url = mode === "edit" ? `/api/courses/${course?.id}` : `/api/courses`
@@ -275,7 +276,7 @@ export function CoursesDialog({ mode, course, onSuccess }: CoursesDialogProps) {
 
               
               <DialogFooter>
-                <Button type="submit" disabled={loading}>
+                <Button  type="submit" disabled={loading}>
                     {mode === "edit" ? "Kaydi Isbedelada" : "Ku dar Maadada"}
                 </Button>
               </DialogFooter>

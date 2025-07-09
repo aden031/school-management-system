@@ -20,8 +20,6 @@ const CourseSchema: Schema = new Schema(
     courseName: {
       type: String,
       required: [true, "Course name is required"],
-      unique: true,
-      trim: true,
     },
     teacherId:{
       type: Schema.Types.ObjectId,
