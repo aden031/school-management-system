@@ -30,6 +30,7 @@ export type User = {
   id: string
   fullName: string
   email: string
+  phone : any
   title: "user" | "dean" | "teacher" | "officer" | "admin"
   status: "active" | "inactive"
 }

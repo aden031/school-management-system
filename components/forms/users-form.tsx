@@ -70,10 +70,10 @@ export function UsersDialog({ mode, user, onDone }: UsersDialogProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const defaultValues: Partial<UsersFormValues> = {
-    fullName: user?.fullName || "",
+  const defaultValues: Record<string, string> = {
+    fullName: user?.fullName?.toString() || "",
     email: user?.email || "",
-    phone: user?.phone as string || "",
+    phone: user?.phone.toString()  || "",
     password: "",
     title: user?.title || "teacher",
     status: user?.status || "active",
