@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/db"
 import Class from "@/lib/models/class"
+import AcademicYear from "@/lib/models/academicyear"
 import Faculty from "@/lib/models/faculty"
 import Department from "@/lib/models/department"
 import mongoose from "mongoose"
@@ -14,6 +15,7 @@ export async function GET() {
     await connectDB()
     const classes = await Class.find({})
       .populate("departmentId", "name")
+      .populate("academicYearId", "name startDate endDate isActive")
       .sort({ createdAt: -1 })
 
     return NextResponse.json(classes, { status: 200 })
@@ -54,18 +56,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Department not found" }, { status: 404 })
     }
 
-    // Create new class
+
+    // Find the active academic year
+    const activeAcademicYear = await AcademicYear.findOne({ isActive: true })
+    if (!activeAcademicYear) {
+      return NextResponse.json({ error: "No active academic year found" }, { status: 400 })
+    }
+
+    // Create new class with academicYearId
     const newClass = await Class.create({
       departmentId: body.departmentId,
       semester: body.semester,
       classMode: body.classMode,
       type: body.type,
       status: body.status || "active",
+      academicYearId: activeAcademicYear._id,
     })
 
-    // Populate faculty and department information
+
+    // Populate department and academic year information
     await newClass.populate([
       { path: "departmentId", select: "name" },
+      { path: "academicYearId", select: "name startDate endDate isActive" },
     ])
 
     return NextResponse.json(newClass, { status: 201 })

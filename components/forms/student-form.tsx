@@ -29,6 +29,7 @@ const formSchema = z.object({
     .regex(/^\d{6}$/, "Student ID must be exactly 6 digits.")
     .optional(),
   status: z.enum(["active", "inactive"]).optional(),
+  studentImage: z.string().optional(),
 })
 
 type StudentFormValues = z.infer<typeof formSchema>
@@ -70,6 +71,9 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
     },
   })
 
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageError, setImageError] = useState<string>("")
+
   const onSubmit = async (data: StudentFormValues) => {
     try {
       // Prepare payload with only non-empty values
@@ -86,14 +90,34 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
         }
       }
 
-      if (mode === "add") {
-        await axios.post(API_BASE, payload)
-      } else if (mode === "edit" && student) {
-        await axios.put(`${API_BASE}/${student.id}`, payload)
+      // Handle image file (convert to base64)
+      if (imageFile) {
+        if (imageFile.size > 5 * 1024 * 1024) {
+          setImageError("Image must be less than 5MB")
+          return
+        }
+        const reader = new FileReader()
+        reader.onloadend = async () => {
+          payload.studentImage = reader.result as string
+          if (mode === "add") {
+            await axios.post(API_BASE, payload)
+          } else if (mode === "edit" && student) {
+            await axios.put(`${API_BASE}/${student.id}`, payload)
+          }
+          onDone()
+          setOpen(false)
+        }
+        reader.readAsDataURL(imageFile)
+        return
+      } else {
+        if (mode === "add") {
+          await axios.post(API_BASE, payload)
+        } else if (mode === "edit" && student) {
+          await axios.put(`${API_BASE}/${student.id}`, payload)
+        }
+        onDone()
+        setOpen(false)
       }
-
-      onDone()
-      setOpen(false)
     } catch (error) {
       console.error("Submit error:", error)
     }
@@ -160,6 +184,22 @@ export function StudentDialog({ mode, student, onDone }: StudentDialogProps) {
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Student Image (max 5MB)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => {
+                    setImageError("")
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0])
+                    } else {
+                      setImageFile(null)
+                    }
+                  }}
+                />
+                {imageError && <div className="text-red-500 text-xs mt-1">{imageError}</div>}
+              </div>
               <FormField
                 control={form.control}
                 name="name"

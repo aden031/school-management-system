@@ -67,7 +67,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
         <div className={cn("flex h-16 items-center border-b px-6", !open && "md:justify-center md:px-0")}>
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <School className="h-6 w-6" />
-            {(open || isMobileOpen) && <span className="text-lg">EduAdmin</span>}
+            {(open || isMobileOpen) && <span className="text-lg">School Admin</span>}
           </Link>
           <Button variant="ghost" size="icon" className="absolute right-4 top-4 md:hidden" onClick={toggleMobileMenu}>
             <X className="h-4 w-4" />
@@ -89,6 +89,7 @@ export function DashboardSidebar({ className, open = true, onOpenChange }: Sideb
 
             {isAdmin && (
               <>
+                <SidebarLink href="/academicyear" icon={BookOpen} label="Sanadka Waxbarashada" open={open} isMobileOpen={isMobileOpen} />
                 <SidebarLink href="/departments" icon={BookOpen} label="Xarumaha" open={open} isMobileOpen={isMobileOpen} />
                 <SidebarLink href="/classes" icon={GraduationCap} label="Fasalada" open={open} isMobileOpen={isMobileOpen} />
                 <SidebarLink href="/students" icon={Users} label="Ardayda" open={open} isMobileOpen={isMobileOpen} />

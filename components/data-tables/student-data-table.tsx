@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { StudentDialog } from "@/components/forms/student-form"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import {StudentFileUpload } from "../forms/students-file-upload"
 
 export type Student = {
@@ -28,6 +29,7 @@ export type Student = {
   studentId: number
   passcode: string
   status: "active" | "inactive"
+  studentImage?: string
 }
 
 export function StudentDataTable() {
@@ -50,6 +52,7 @@ export function StudentDataTable() {
           studentId: student?.studentId ?? "No ID",
           passcode: student?.passcode ?? "No Passcode",
           status: student?.status ?? "No Status",
+          studentImage: student?.studentImage ?? undefined,
         }));
         setStudents(data);
     } catch (error) {
@@ -64,6 +67,32 @@ export function StudentDataTable() {
   }, [fetchStudents])
 
   const columns: ColumnDef<Student>[] = [
+    {
+      accessorKey: "studentImage",
+      header: "Image",
+      cell: ({ row }) => {
+        const img = row.original.studentImage;
+        if (!img) return <span style={{ color: '#aaa' }}>No Image</span>;
+        return (
+          <Dialog>
+            <DialogTrigger asChild>
+              <img
+                src={img}
+                alt="Student"
+                style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 20, cursor: "pointer" }}
+              />
+            </DialogTrigger>
+            <DialogContent className="flex flex-col items-center justify-center">
+              <img
+                src={img}
+                alt="Student Full"
+                style={{ maxWidth: 400, maxHeight: 400, borderRadius: 12 }}
+              />
+            </DialogContent>
+          </Dialog>
+        );
+      },
+    },
     {
       accessorKey: "studentId",
       header: "ID-ga ardayga",

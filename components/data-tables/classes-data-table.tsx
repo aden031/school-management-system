@@ -27,6 +27,7 @@ export type Classes = {
   classMode: "full time" | "part time"
   type: "A" | "B" | "C" | "D"
   status: "active" | "inactive"
+  academicYearName?: string
 }
 
 export function ClassesDataTable() {
@@ -47,6 +48,7 @@ export function ClassesDataTable() {
         classMode: item.classMode,
         type: item.type,
         status: item.status,
+        academicYearName: item.academicYearId?.name ?? "-",
       }))
       setData(classesData)
     } catch (error) {
@@ -61,6 +63,11 @@ export function ClassesDataTable() {
   }, [])
 
   const columns: ColumnDef<Classes>[] = [
+    {
+      accessorKey: "academicYearName",
+      header: "Academic Year",
+      cell: ({ row }) => row.original.academicYearName || "-",
+    },
     {
       id: "index",
       header: "ID",

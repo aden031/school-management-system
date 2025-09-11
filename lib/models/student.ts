@@ -12,6 +12,7 @@ export interface IStudent extends Document {
   studentId: number
   passcode: string
   status: string
+  studentImage?: string // URL or base64/blob string
 }
 
 const StudentSchema: Schema = new Schema(
@@ -48,19 +49,32 @@ const StudentSchema: Schema = new Schema(
       required: [true, "Student ID is required"],
       unique: true,
     },
+    // passcode: {
+    //   type: String,
+    // },
     status: {
       type: String,
       enum: ["active", "inactive"],
       default: "active",
     },
+    studentImage: {
+      type: String, // Store as base64 string, blob URL, or file path
+      default: null,
+    },
   },
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 )
+
+
 
 // Create or retrieve the model
 const Student: Model<IStudent> = mongoose.models.Student || mongoose.model<IStudent>("Student", StudentSchema)
 
+
+
 export default Student
+
+

@@ -20,7 +20,9 @@ export async function POST(request: Request) {
     const query: any = {};
     if (Email) query.Email = Email;
     if (studentId) query.studentId = studentId;
-
+    
+    const users = await User.find();
+    console.log(users)
     const user = await User.findOne(query);
 
     if (!user) {

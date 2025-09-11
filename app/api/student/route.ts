@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
       studentId: body.studentId,
       passcode: body.passcode || "1234",
       status: body.status || "active",
+      studentImage: body.studentImage || null,
     })
 
     // Populate faculty and class information
@@ -91,6 +92,8 @@ export async function POST(request: NextRequest) {
         },
       },
     ])
+
+    console.log("student", student,body)
 
     return NextResponse.json(student, { status: 201 })
   } catch (error: any) {

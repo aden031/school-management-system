@@ -2,9 +2,12 @@ import mongoose, { Schema, type Document, type Model } from "mongoose"
 import type { IFaculty } from "./faculty"
 import type { IDepartment } from "./department"
 
+import type { IAcademicYear } from "./academicyear"
+
 export interface IClass extends Document {
   facultyId: mongoose.Types.ObjectId | IFaculty
   departmentId: mongoose.Types.ObjectId | IDepartment
+  academicYearId: mongoose.Types.ObjectId | IAcademicYear
   semester: number
   classMode: "full time" | "part time"
   type: string
@@ -22,13 +25,18 @@ const ClassSchema: Schema = new Schema(
       ref: "Department",
       required: [true, "Department ID is required"],
     },
+    academicYearId: {
+      type: Schema.Types.ObjectId,
+      ref: "AcademicYear",
+      required: [true, "Academic Year is required"],
+    },
     semester: {
       type: Number,
       required: [true, "Semester is required"],
       min: 1,
       max: 8,
     },
-classMode: {
+    classMode: {
       type: String,
       required: [true, "💡 Class mode is required."],
       enum: {
